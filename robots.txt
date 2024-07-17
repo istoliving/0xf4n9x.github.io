@@ -1,0 +1,17 @@
+User-agent: *
+Allow: /
+Allow: /archives/
+Allow: /categories/
+Allow: /about/
+Allow: /tags/
+
+Disallow: /vendors/
+Disallow: /img/
+Disallow: /js/
+Disallow: /lib/
+Disallow: /css/
+Disallow: /fonts/
+Disallow: /vendors/
+Disallow: /fancybox/
+
+Sitemap: https://0xf4n9x.github.io/sitemap.xml

