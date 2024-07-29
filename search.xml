@@ -76,9 +76,9 @@
       
         <tags>
             
-            <tag> bypass </tag>
-            
             <tag> java </tag>
+            
+            <tag> bypass </tag>
             
             <tag> info-leak </tag>
             
@@ -105,11 +105,11 @@
       
         <tags>
             
-            <tag> bypass </tag>
-            
             <tag> cve </tag>
             
             <tag> java </tag>
+            
+            <tag> bypass </tag>
             
             <tag> rce </tag>
             

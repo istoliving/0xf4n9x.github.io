@@ -4,7 +4,7 @@
   <url>
     <loc>https://0xf4n9x.github.io/about/</loc>
     
-    <lastmod>2024-06-16</lastmod>
+    <lastmod>2024-07-29</lastmod>
     
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
@@ -164,7 +164,7 @@
   </url>
   
   <url>
-    <loc>https://0xf4n9x.github.io/java-deserialization-cc6.html</loc>
+    <loc>https://0xf4n9x.github.io/java-deserialization-cc1-transformedmap.html</loc>
     
     <lastmod>2023-03-11</lastmod>
     
@@ -173,7 +173,7 @@
   </url>
   
   <url>
-    <loc>https://0xf4n9x.github.io/java-deserialization-cc1-transformedmap.html</loc>
+    <loc>https://0xf4n9x.github.io/java-deserialization-cc6.html</loc>
     
     <lastmod>2023-03-11</lastmod>
     
@@ -265,176 +265,176 @@
 
   <url>
     <loc>https://0xf4n9x.github.io/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
 
   
   <url>
-    <loc>https://0xf4n9x.github.io/tags/dns/</loc>
-    <lastmod>2024-07-17</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
-    <loc>https://0xf4n9x.github.io/tags/bypass/</loc>
-    <lastmod>2024-07-17</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.2</priority>
-  </url>
-  
-  <url>
     <loc>https://0xf4n9x.github.io/tags/cve/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://0xf4n9x.github.io/tags/java/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://0xf4n9x.github.io/tags/dns/</loc>
+    <lastmod>2024-07-29</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://0xf4n9x.github.io/tags/bypass/</loc>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://0xf4n9x.github.io/tags/rce/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://0xf4n9x.github.io/tags/shiro/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://0xf4n9x.github.io/tags/deserialization/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://0xf4n9x.github.io/tags/xstream/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://0xf4n9x.github.io/tags/proxy/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://0xf4n9x.github.io/tags/path-traversal/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://0xf4n9x.github.io/tags/golang/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://0xf4n9x.github.io/tags/code-audit/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://0xf4n9x.github.io/tags/log4j/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://0xf4n9x.github.io/tags/jndi/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://0xf4n9x.github.io/tags/sast/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://0xf4n9x.github.io/tags/pentest/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://0xf4n9x.github.io/tags/mysql/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://0xf4n9x.github.io/tags/sql/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://0xf4n9x.github.io/tags/php/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://0xf4n9x.github.io/tags/info-leak/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://0xf4n9x.github.io/tags/tomcat/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://0xf4n9x.github.io/tags/sqli/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://0xf4n9x.github.io/tags/ecology/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://0xf4n9x.github.io/tags/python/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
@@ -443,35 +443,35 @@
   
   <url>
     <loc>https://0xf4n9x.github.io/categories/%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://0xf4n9x.github.io/categories/Java%E5%AE%89%E5%85%A8/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://0xf4n9x.github.io/categories/%E4%BB%A3%E7%A0%81%E5%AE%A1%E8%AE%A1/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://0xf4n9x.github.io/categories/%E5%AE%89%E5%85%A8%E5%B7%A5%E5%85%B7/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
   
   <url>
     <loc>https://0xf4n9x.github.io/categories/%E6%B8%97%E9%80%8F%E6%B5%8B%E8%AF%95/</loc>
-    <lastmod>2024-07-17</lastmod>
+    <lastmod>2024-07-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.2</priority>
   </url>
